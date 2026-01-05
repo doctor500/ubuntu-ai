@@ -1,0 +1,9 @@
+context/user_data.json
+context/change_log.md
+context/autoinstall.yaml
+.tools/
+.venv/
+.subiquity/
+__pycache__/
+*.pyc
+.DS_Store

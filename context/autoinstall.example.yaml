@@ -1,0 +1,65 @@
+#cloud-config
+# Ubuntu Desktop Autoinstall Example Configuration
+# 
+# This is a TEMPLATE file. To use it:
+# 1. Copy this file: cp context/autoinstall.example.yaml context/autoinstall.yaml
+# 2. Edit context/autoinstall.yaml with your actual values
+# 3. Never commit your personalized autoinstall.yaml (it's gitignored)
+#
+# Reference: https://canonical-subiquity.readthedocs-hosted.com/en/latest/
+
+autoinstall:
+  version: 1
+  
+  identity:
+    # Set your desired hostname
+    hostname: ubuntu-desktop-vm
+    
+    # Set your username
+    username: myuser
+    
+    # Password hash (REQUIRED)
+    # Generate with: mkpasswd -m sha-512
+    # Example command: mkpasswd -m sha-512 "YourPasswordHere"
+    # NEVER use a plaintext password or commit your actual hash!
+    password: "$6$rounds=4096$EXAMPLESALT$ExampleHashValue.PleaseGenerateYourOwnHashUsingMkpasswdCommand"
+  
+  # System locale
+  locale: en_US.UTF-8
+  
+  # Keyboard layout
+  keyboard:
+    layout: us
+  
+  # SSH configuration
+  ssh:
+    install-server: true
+    allow-pw: true
+    # For production, consider:
+    # - Setting allow-pw: false after SSH key setup
+    # - Adding authorized_keys in user-data section
+  
+  # Packages to install
+  # Add or remove packages based on your needs
+  packages:
+    # Desktop environment
+    - ubuntu-desktop-minimal
+    # or use: ubuntu-desktop (full desktop)
+    
+    # Development tools
+    - git
+    - neofetch
+    - net-tools
+    
+    # Docker bundle (requires repository setup - see installation_bundles/docker/)
+    # Uncomment these after adding Docker repository to sources
+    # - docker-ce
+    # - docker-ce-cli
+    # - containerd.io
+    # - docker-buildx-plugin
+    # - docker-compose-plugin
+    
+    # Add your additional packages here:
+    # - vim
+    # - curl
+    # - build-essential
