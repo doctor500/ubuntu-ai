@@ -21,6 +21,7 @@ Contains "Bundles" for complex installations (e.g., Docker) that require multipl
 
 ### `context/procedures/`
 *   **`exclude_bundles/`**: How to generate configs that exclude specific bundles.
+*   **`init_autoinstall/`**: How to initialize `autoinstall.yaml` from the example template.
 *   **`init_change_log/`**: How to recover a missing change log.
 *   **`init_user_data/`**: How to initialize the sensitive data file.
 *   **`maintain_docs/`**: How to keep `README.md` synchronized with project structure.
