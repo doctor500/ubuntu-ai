@@ -20,6 +20,7 @@ Contains "Bundles" for complex installations (e.g., Docker) that require multipl
 ### `context/procedures/`
 Standardized procedures with `context.md` (why/when) and `procedure.md` (how) pattern:
 
+*   **`add_late_command/`**: Add post-installation commands to autoinstall configuration.
 *   **`exclude_bundles/`**: Generate variant configs that exclude specific installation bundles.
 *   **`init_autoinstall/`**: Initialize `autoinstall.yaml` from the example template.
 *   **`init_change_log/`**: Initialize change log with Keep a Changelog format.
