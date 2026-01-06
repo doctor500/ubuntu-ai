@@ -1,15 +1,67 @@
-# Exclude Bundles Procedure Context
+# Bundle Exclusion Context
+
+## Overview
+Generate variant autoinstall configurations that exclude specific installation bundles and their packages.
 
 ## Goal
-Generate a variant `autoinstall.yaml` file that excludes packages and configuration sections associated with specified installation bundles. This allows for creating customized autoinstall configurations for different deployment scenarios.
+Create customized `autoinstall.yaml` variants for different deployment scenarios by excluding specified installation bundles (e.g., Docker, custom builds). This enables maintaining multiple VM configurations from a single base template without manual package list management.
+
+## Triggers
+When should an AI agent invoke this procedure?
+- User requests a "minimal" or "lightweight" configuration
+- Creating configuration for environments where certain bundles aren't needed
+- Testing autoinstall without optional components
+- Deploying to restricted environments (e.g., no containers allowed)
+- Generating configs for different VM roles (web server vs database server)
+
+## Prerequisites
+Required before running:
+- `context/autoinstall.yaml` must exist (master configuration)
+- Installation bundle(s) to exclude must have proper `context.md` files
+- Bundle `context.md` must list "Packages Installed"
+- Understanding of which bundles can be safely excluded
 
 ## Logic
-1.  **Input:** The user provides a list of `bundle_name`(s) to exclude (e.g., `docker`).
-2.  **Identify Excluded Packages:** For each excluded `bundle_name`, the AI Agent will read `context/installation_bundles/<bundle_name>/context.md` to identify the "Packages Installed" by that bundle.
-3.  **Identify Excluded `apt: sources`:** The AI Agent must also identify `apt: sources` entries that belong exclusively to the excluded bundles. This will require checking comments in `autoinstall.yaml` or explicit definition in bundle's `context.md`. (The current `autoinstall.yaml` already has `apt: # Added by Docker Installation Bundle` as a comment).
-4.  **Create Temporary Config:** Load the main `context/autoinstall.yaml` into a temporary data structure.
-5.  **Remove Excluded Items:** Iterate through the identified packages and `apt: sources` and remove them from the temporary configuration.
-6.  **Generate New File:** Write the modified configuration to a new `autoinstall-<variant_name>.yaml` file.
+Step-by-step exclusion flow:
+1. User specifies bundle(s) to exclude (e.g., "docker")
+2. For each excluded bundle:
+   a. Read `context/installation_bundles/<bundle>/context.md`
+   b. Extract "Packages Installed" list
+   c. Identify bundle-specific `apt: sources` (check comments in autoinstall.yaml)
+3. Load main `context/autoinstall.yaml` into memory
+4. Remove identified packages from `packages:` list
+5. Remove identified `apt: sources` entries (if exclusive to excluded bundles)
+6. Remove bundle-specific configuration sections
+7. Write modified configuration to `autoinstall-<variant>.yaml`
+8. Validate new configuration with validate_config procedure
+9. Report changes made and packages removed
 
-## Output
-A new `autoinstall-<variant_name>.yaml` file, ready for validation and use.
+## Related Files
+- `context/autoinstall.yaml` - Master configuration (source)
+- `context/autoinstall-<variant>.yaml` - Generated variant (output)
+- `installation_bundles/*/context.md` - Bundle package lists
+- `procedures/validate_config/` - Validate generated variant
+- `installation_bundles/README.md` - Bundle structure documentation
+
+## AI Agent Notes
+- **Auto-run Safety:** SAFE - Generates new file, doesn't modify original
+- **User Interaction:**
+  - Confirm which bundles to exclude
+  - Show packages that will be removed
+  - Ask for variant name (e.g., "minimal", "no-docker")
+  - Offer to validate generated config
+- **Common Failures:**
+  - Bundle context.md missing "Packages Installed" section → Warn user
+  - Bundle not found in installation_bundles/ → List available bundles
+  - Invalid YAML after exclusion → Run validation, show errors
+- **Edge Cases:**
+  - Excluding bundle that others depend on → Check dependencies, warn user
+  - Package appears in multiple bundles → Only remove if all bundles excluded
+  - apt: source used by multiple bundles → Keep if any bundle remains
+  - Comment format in autoinstall.yaml doesn't match expected → Manual intervention needed
+- **Error Handling:**
+  - If can't parse autoinstall.yaml, suggest validation first
+  - If bundle context.md malformed, skip that bundle with warning
+  - If output file exists, ask to overwrite
+- **Validation:** Always offer to run validate_config on generated file
+- **Documentation:** Suggest adding comment to variant file explaining exclusions
