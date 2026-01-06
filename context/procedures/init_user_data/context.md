@@ -15,43 +15,42 @@ When should an AI agent invoke this procedure?
 - When setting up the project in a new environment
 
 ## Prerequisites
-Required before running:
-- None (this is typically the first procedure to run)
+**Common:** See common_patterns.md#user-availability
+
+**Specific:**
 - User must know their VM details (IP, username, hostname)
+- This is typically the first procedure to run (no other dependencies)
 
 ## Logic
-Step-by-step initialization flow:
+Initialization workflow:
 1. Check if `context/user_data.json` exists
 2. If exists, verify it has required keys
-3. If missing or incomplete:
-   a. Prompt user for required information:
-      - `vm_ip`: IP address of the target VM
-      - `vm_username`: SSH username for VM access
-      - `vm_hostname`: Expected hostname of the VM
-   b. Validate input (basic format checking)
-   c. Create JSON file with provided values
-4. Save file to `context/user_data.json`
-5. Verify file was created successfully
+3. If missing or incomplete → Prompt for:
+   - `vm_ip`: IP address of the target VM
+   - `vm_username`: SSH username for VM access  
+   - `vm_hostname`: Expected hostname of the VM
+4. Validate input (basic format checking)
+5. Create JSON file with provided values
+6. Verify file was created successfully
 
 ## Related Files
 - `context/user_data.json` - The file being created (gitignored)
 - `procedures/verify_vm/` - Uses this data for VM connections
-- `context/live_vm_verification.md` - References placeholders from this file
 - `installation_bundles/docker/context.md` - Uses `{{vm_username}}` placeholder
 
 ## AI Agent Notes
-- **Auto-run Safety:** REQUIRES USER INPUT - Cannot auto-run, must collect data
-- **User Interaction:** Always prompt for VM details; show example format
-- **Common Failures:**
-  - User provides invalid IP format → Validate as xxx.xxx.xxx.xxx
-  - User unsure of hostname → Suggest checking with `hostname` command on VM
-  - File permissions issue → Ensure write access to context/ directory
-- **Edge Cases:**
-  - File exists but has old/incorrect data → Ask if user wants to update
-  - Missing only some keys → Only prompt for missing values
-  - User has multiple VMs → This file stores ONE VM's details; create variants if needed
-- **Error Handling:**
-  - If can't write file, check directory permissions
-  - If user cancels, leave file as-is (or missing)
-  - Validate IP format before saving
-- **Security:** File is gitignored by design - contains potentially sensitive info
+**Safety:** NEVER | Requires interactive user input
+
+**User Prompting:**
+- Always show example format: `{"vm_ip": "10.1.21.29", ...}`
+- Validate IP format (xxx.xxx.xxx.xxx) before saving
+- Suggest using `hostname` command if user unsure of VM hostname
+
+**Common Issues:**See common_patterns.md#file-not-found, #permission-denied
+
+**Procedure-Specific:**
+- File exists with old data → Ask if user wants to update
+- Missing only some keys → Only prompt for missing values
+- Multiple VMs → This stores ONE VM; create variants if needed
+
+**Security:** File gitignored by design (contains sensitive connection details)

@@ -16,51 +16,41 @@ When should an AI agent invoke this procedure?
 - As part of CI/CD validation pipeline
 
 ## Prerequisites
-Required before running:
-- `context/autoinstall.yaml` must exist
-- Python 3 installed on local system
-- Git installed on local system
-- System dependencies for Subiquity validator installed
-- `.tools/subiquity` repository cloned (or will be cloned automatically)
+**Common:** See common_patterns.md#standard-prerequisites
+
+**Specific:**
+- `context/autoinstall.yaml` must exist (use init_autoinstall if missing)
+- Python 3 and Git installed locally
+- `.tools/subiquity` repository (cloned automatically if missing)
 
 ## Logic
-Step-by-step validation flow:
+Validation workflow:
 1. Check if `autoinstall.yaml` exists
-2. Check if validation tools are set up (`.tools/subiquity`)
-3. If not set up:
-   a. Install system dependencies (Python packages)
-   b. Clone Subiquity repository
-   c. Initialize Subiquity external dependencies
+2. Check if validation tools set up (`.tools/subiquity`)
+3. If not set up → Install dependencies, clone Subiquity, initialize
 4. Generate JSON schema from Subiquity
 5. Run validation script against `autoinstall.yaml`
-6. Parse validation output:
-   - Exit code 0 → Success
-   - Exit code 1 → Validation errors found
-7. Report results to user
-8. If errors found, suggest corrections
+6. Parse results: Exit 0 = success, Exit 1 = errors found
+7. Report results and suggest corrections if needed
 
 ## Related Files
-- `context/autoinstall.yaml` - The configuration being validated
+- `context/autoinstall.yaml` - Configuration being validated
 - `context/autoinstall-schema.json` - Generated validation schema
 - `.tools/subiquity/` - Canonical's validation tools (gitignored)
 - `procedures/init_autoinstall/` - Creates autoinstall.yaml if missing
 
 ## AI Agent Notes
-- **Auto-run Safety:** SAFE - Validation is read-only, doesn't modify files
-- **User Interaction:** Automatically run after config changes; show results
-- **Common Failures:**
-  - `autoinstall.yaml` missing → Run init_autoinstall first
-  - Dependencies not installed → Offer to install them (requires sudo)
-  - Subiquity tools not cloned → Auto-clone is safe
-  - Validation errors → Show error details and suggest fixes
-- **Edge Cases:**
-  - First-time setup requires internet connection (git clone)
-  - System dependency installation requires sudo password
-  - Schema generation must run from specific directory
-  - Validation script has path dependencies
-- **Error Handling:**
-  - If autoinstall.yaml missing, suggest init_autoinstall
-  - If dependencies missing, provide installation commands
-  - If validation fails, parse and display specific error messages
-  - If network unavailable, note that Subiquity tools can't be downloaded
-- **Performance:** Validation typically takes 2-5 seconds; first-time setup 1-2 minutes
+**Safety:** SAFE | Read-only validation, no file modifications
+
+**User Interaction:** Auto-run after config changes, show results clearly
+
+**Common Issues:** See common_patterns.md#file-not-found, #yaml-syntax-error, #network-timeout
+
+**Procedure-Specific:**
+- First-time setup requires internet (git clone ~1-2 min)
+- System dependencies may need sudo password
+- Validation typically takes 2-5 seconds
+- Schema generation must run from specific directory
+- If validation fails → Parse and display specific error messages with fixes
+
+**Performance:** First run 1-2 min (setup), subsequent runs 2-5 sec

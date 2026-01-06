@@ -1,66 +1,51 @@
 # Change Log Initialization Context
 
+## Overview
+Initialize `change_log.md` with Keep a Changelog v1.1.0 standard format.
+
 ## Goal
-To ensure the `change_log.md` file exists and follows the [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) standard format before attempting to write to it. This prevents errors when the file is missing and ensures consistency with industry best practices.
-
-## Standard Format
-This project uses **Keep a Changelog v1.1.0** format with **Semantic Versioning**:
-
-```markdown
-# Changelog
-
-All notable changes to this project will be documented in this file.
-
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
-
-## [Unreleased]
-
-## [X.Y.Z] - YYYY-MM-DD
-
-### Added
-- New features
-
-### Changed
-- Changes in existing functionality
-
-### Deprecated
-- Soon-to-be removed features
-
-### Removed
-- Removed features
-
-### Fixed
-- Bug fixes
-
-### Security
-- Security-related changes
-```
-
-## Change Categories
-Changes must be categorized into one of these sections:
-- **Added**: New features, files, or capabilities
-- **Changed**: Modifications to existing functionality
-- **Deprecated**: Features marked for future removal
-- **Removed**: Features or files that have been deleted
-- **Fixed**: Bug fixes
-- **Security**: Security-related changes (vulnerabilities, improvements)
+Create and maintain `context/change_log.md` following Keep a Changelog v1.1.0 standard with Semantic Versioning. Ensures consistent, readable change documentation across the project lifecycle.
 
 ## Triggers
-- AI Agent prepares to log an action but suspects the log file might be missing
-- `change_log.md` is deleted or corrupted
-- Initialization of a new project environment
-- First-time repository clone
+When should an AI agent invoke this procedure?
+- `context/change_log.md` does not exist
+- User explicitly requests "initialize changelog"
+- Before making significant changes requiring documentation
+- Setting up project for first time
+
+## Prerequisites
+**Common:** See common_patterns.md#standard-prerequisites
+
+**Specific:**
+- Understanding of Keep a Changelog format
+- Knowledge of Semantic Versioning (MAJOR.MINOR.PATCH)
 
 ## Logic
-1.  **Check Existence:** Verify if `context/change_log.md` exists
-2.  **Create if Missing:** If it does not exist, create it with the standard Keep a Changelog header and an initial version entry
-3.  **No-op if Exists:** If it exists, proceed without modifying it (the logging action will handle appending entries)
+Initialization workflow:
+1. Check if `change_log.md` exists
+2. If missing → Create with standard header and structure
+3. Add [Unreleased] section
+4. Add initial [0.1.0] entry with project initialization
+5. Include all standard sections: Added, Changed, Deprecated, Removed, Fixed, Security
 
-## Versioning Guidelines
-- Use [Semantic Versioning](https://semver.org/): `[MAJOR.MINOR.PATCH]`
-- **MAJOR**: Incompatible changes (breaking changes)
-- **MINOR**: Add functionality (backwards-compatible)
-- **PATCH**: Bug fixes (backwards-compatible)
-- For this infrastructure project, increment MINOR for new features/procedures
-- Use `[Unreleased]` section for work in progress
+## Related Files
+- `context/change_log.md` - The changelog (gitignored)
+- All procedures reference this for documentation
+
+## AI Agent Notes
+**Safety:** SAFE | Creates new file with standard template
+
+**Format Requirements:**
+- Use Keep a Changelog v1.1.0 format
+- Follow Semantic Versioning for releases
+- Categories: Added, Changed, Deprecated, Removed, Fixed, Security
+- Date format: YYYY-MM-DD
+
+**Common Issues:** See common_patterns.md#file-not-found, #permission-denied
+
+**Procedure-Specific:**
+- File exists but wrong format → Offer to reformat to standard
+- Missing sections → Add during maintenance
+- Version numbering unclear → Explain SemVer rules
+
+**Maintenance:** Use maintain_docs procedure to keep synchronized with actual changes

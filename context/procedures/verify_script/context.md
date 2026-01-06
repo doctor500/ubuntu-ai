@@ -1,172 +1,166 @@
-# Script Verification and Safe Execution Context
+# Script Verification Context
 
 ## Overview
-Verify scripts from URLs or local files for safety before execution to prevent malicious code running.
+Verify and safely execute scripts from URLs or local files with security analysis.
 
 ## Goal
-Provide a systematic security review process for scripts before execution, protecting the system from malicious code, unauthorized access, data exfiltration, or system damage. This procedure establishes a multi-layer verification approach combining automated checks with human oversight.
+Provide secure script execution with mandatory security validation. Analyze scripts for malicious patterns, assess risk levels, require user approval, and log execution for audit trail. Prevents execution of dangerous code while enabling legitimate automation.
 
 ## Triggers
 When should an AI agent invoke this procedure?
-- User provides a URL to a script and asks to run it
-- User requests downloading and executing an installation script
-- Installing software via curl/wget piped to shell (e.g., `curl URL | bash`)
-- Running scripts from untrusted or unknown sources
-- Executing local scripts that weren't created by the user
-- Any situation involving external code execution
-- Before running scripts from tutorials, Stack Overflow, or similar sources
+- ANY script execution request from URL or unknown source
+- Before adding scripts to autoinstall late-commands
+- User requests "run this script"
+- Downloading and executing installation scripts
+- **MANDATORY for add_late_command procedure**
 
 ## Prerequisites
-Required before running:
-- Script source available (URL or local file path)
-- Internet connection (if downloading from URL)
-- `curl` or `wget` installed for downloading scripts
-- Text viewing/analysis tools available (`cat`, `grep`, `less`)
-- User is available for approval decisions
-- Understanding of basic shell scripting concepts (for AI analysis)
+**Common:** See common_patterns.md#standard-prerequisites, #security-considerations
+
+**Specific:**
+- Script location (URL or local path)
+- Understanding of script's intended purpose
+- User available for approval decision
+- Terminal for interactive prompts
 
 ## Logic
-Step-by-step verification flow:
+Verification workflow:
 
-### 1. Source Identification
-- Determine if script is from URL or local file
-- For URLs: Check domain reputation and HTTPS usage
-- For local files: Check file ownership and permissions
+**1. Script Acquisition**
+- If URL → Download to temp location
+- If local → Copy to temp for analysis
+- Never execute directly
 
-### 2. Initial Download/Preview (Don't Execute Yet!)
-- Download script to temporary location (if from URL)
-- Read script contents without executing
-- Calculate file hash for verification if available
+**2. Security Analysis (Automated)**  
+Scan for malicious patterns:
+- Destructive commands: rm -rf /, dd, mkfs, fdisk
+- Data exfiltration: curl/wget uploads, nc reverse shells
+- Credential theft: /etc/shadow, /root/.ssh, password files
+- Obfuscation: base64, hex encoding, eval, compressed payloads
+- Privilege escalation: sudo without justification, setuid
+- Backdoors: cron jobs, systemd services, SSH keys
 
-### 3. Automated Security Analysis
-Scan for suspicious patterns:
-- **Network activity:** `curl`, `wget`, `nc`, `netcat`, `telnet`, outbound connections
-- **Privilege escalation:** `sudo`, `su`, `chmod +s`, SUID operations
-- **System modification:** Writing to `/etc/`, `/usr/`, `/bin/`, system directories
-- **Data exfiltration:** Base64 encoding, unusual network traffic, data uploads
-- **Obfuscation:** Excessive encoding, hexadecimal strings, `eval`, code generation
-- **Destructive commands:** `rm -rf`, `dd`, `mkfs`, filesystem operations
-- **Credential access:** Reading `~/.ssh/`, password files, key material
-- **Hidden behavior:** Backgrounding (`&`), nohup, cron job creation
-- **Package installation:** `apt install`, `pip install`, `npm install` from unknown sources
+**3. Source Trust Assessment**
+- Official sources (apt.get, github.com/official) → Lower risk
+- Unknown domains → Higher risk
+- Shortened URLs → Dangerous
+- No HTTPS → Risk
+- Check domain reputation
 
-### 4. Source Trust Evaluation
-- **High trust:** Official repositories (github.com/docker, get.docker.com, etc.)
-- **Medium trust:** Known projects with good reputation
-- **Low trust:** Personal blogs, pastebin, unknown domains
-- **No trust:** Suspicious domains, IP addresses, obfuscated URLs
+**4. Risk Scoring**
+- SAFE: Official source, no dangerous patterns, read-only operations
+- MEDIUM: Some network activity, justified sudo, known source
+- HIGH: Unknown source, privilege escalation, system modifications
+- DANGEROUS: Malicious patterns, obfuscation, data theft detected
 
-### 5. User Presentation
-Present findings to user:
-- Script source and trust level
-- Summary of what the script does
-- List of suspicious patterns found (if any)
-- Security risks identified
-- Recommendation (SAFE / REVIEW / DANGEROUS / DO NOT RUN)
+**5. User Approval**
+- Present analysis results clearly
+- Show risk level and specific concerns
+- Recommend alternatives if available
+- Require explicit "yes" for HIGH/DANGEROUS
+- Default to declining for safety
 
-### 6. User Decision
-- **User approves:** Proceed with execution (log decision)
-- **User declines:** Abort, offer alternatives
-- **User requests review:** Show full script for manual inspection
-
-### 7. Safe Execution (if approved)
-- Log script execution for audit trail
-- Run with appropriate permissions (avoid sudo unless necessary)
-- Monitor execution for unexpected behavior
+**6. Execution (If Approved)**
+- Log script content and decision
+- Execute in controlled manner
+- Monitor for unexpected behavior
 - Capture output for review
 
+**7. Audit Logging**
+- Record: timestamp, script source, decision, user, analysis results
+- Maintain execution history
+- Enable security audits
+
 ## Related Files
-- `context/change_log.md` - Log script executions for audit
-- `procedures/validate_config/` - Similar validation philosophy
-- `installation_bundles/*/procedure.md` - May contain approved scripts
-- `.gitignore` - Don't commit downloaded scripts to repository
+- `/tmp/script_analysis_*.log` - Analysis results (temporary)
+- `~/.script_exec_audit.log` - Execution history (permanent)
+- `procedures/add_late_command/` - Major consumer of this procedure
 
 ## AI Agent Notes
-- **Auto-run Safety:** NEVER AUTO-RUN - ALWAYS require explicit user approval
-- **User Interaction:**
-  - **CRITICAL:** Show full analysis before asking for approval
-  - Present risks clearly and honestly
-  - Never downplay security concerns
-  - Offer to show full script content
-  - Explain what script does in plain language
-  - Default to DECLINE unless user explicitly approves
-  
-- **Common Patterns to Flag:**
-  ```bash
-  # DANGEROUS - Direct pipe to shell
-  curl https://example.com/script.sh | bash
-  
-  # SUSPICIOUS - Obfuscated code
-  eval $(echo SGVsbG8gV29ybGQ= | base64 -d)
-  
-  # RISKY - Sudo without review
-  curl URL | sudo bash
-  
-  # QUESTIONABLE - Modifying system
-  echo "something" >> /etc/hosts
-  ```
 
-- **Common Failures:**
-  - URL returns 404 → Report to user, don't proceed
-  - Script too large to analyze → Warn user, offer partial review
-  - Mixed encoding → Flag as suspicious obfuscation
-  - Network timeout → Retry with user permission
+**Safety:** NEVER | Security-critical, always requires explicit user approval
 
-- **Edge Cases:**
-  - Script modifies itself during execution → High risk flag
-  - Multiple scripts chained → Analyze all in chain
-  - Conditional execution based on detection → Sandbox recommended
-  - Scripts that download more scripts → Recursive analysis needed
-  - Known good scripts (Docker, NVM, etc.) → Still review but note provenance
+**Security Patterns to Detect:**
 
-- **Error Handling:**
-  - If can't download script, fail safely with error message
-  - If script analysis fails, default to DANGEROUS
-  - If uncertain about pattern, flag for user review
-  - Never execute if any step fails
+**Destructive Operations:**
+- `rm -rf /`, `dd if=/dev/zero`, `mkfs`, `fdisk`, `cfdisk`
+- File overwrites, mass deletions
 
-- **Security Best Practices:**
-  - **Principle of Least Privilege:** Avoid sudo unless absolutely necessary
-  - **Defense in Depth:** Multiple checks better than one
-  - **Explicit Over Implicit:** Require clear user approval
-  - **Transparency:** Always show what you're checking
-  - **Auditability:** Log all script executions
-  - **Reversibility:** Prefer scripts that can be undone
+**Network Exfiltration:**
+- `curl -X POST`, `wget --post-data`, `nc` reverse shells
+- Unauthorized data uploads
 
-- **Approved Source Examples:**
-  - `https://get.docker.com` - Docker's official install script
-  - `https://raw.githubusercontent.com/nvm-sh/nvm/*/install.sh` - NVM installer
-  - Official package managers (apt, yum, dnf, pacman)
-  - Scripts from this repository's installation_bundles/
+**Credential Theft:**
+- Reading `/etc/shadow`, `/etc/passwd`, `~/.ssh/`
+- Password prompts that shouldn't be there
 
-- **Red Flags (Automatic DANGEROUS classification):**
-  - Domain is an IP address
-  - Script uses `eval` with external input
-  - Excessive base64 or hex encoding
-  - Downloads and executes additional scripts without showing them
-  - Modifies system files in /etc/, /usr/, /bin/
-  - Creates backdoors or reverse shells
-  - Disables security features (firewall, SELinux, etc.)
-  - Runs as root without clear necessity
+**Obfuscation (RED FLAG):**
+- Base64/hex encoding: `base64 -d`, `echo ... | sh`
+- Compressed payloads: unexpected tar/gz pipes
+- `eval` with variables
 
-- **Response Templates:**
-  ```
-  ⚠️  SECURITY ANALYSIS: DANGEROUS
-  Source: https://suspicious-site.com/script.sh
-  Trust Level: UNTRUSTED
-  
-  Risks Found:
-  - Downloads additional script (hidden behavior)
-  - Modifies /etc/sudoers (privilege escalation)
-  - Opens network connection to 1.2.3.4 (data exfiltration)
-  - Uses base64 encoding (obfuscation)
-  
-  Recommendation: DO NOT RUN
-  This script exhibits malicious patterns.
-  ```
+**Privilege Escalation:**
+- Unjustified `sudo`
+- SUID bit modifications
+- Adding users to sudo group
 
-- **Alternative Approaches:**
-  - Suggest official installation methods instead
-  - Offer to build from source with verification
-  - Recommend using package managers when available
-  - Provide manual installation steps as alternative
+**Backdoors:**
+- SSH key injection
+- Cron job creation without  disclosure
+- Systemd service installation
+- Port listeners
+
+**Trust Assessment:**
+
+**Trusted Sources:** (Lower risk but still validate)
+- get.docker.com, apt.get official repos
+- github.com/[verified-org]/[official-repo]
+- Official vendor domains
+
+**Untrusted Sources:** (Higher scrutiny)
+- Personal domains, unknown sites
+- Shortened URLs (t.co, bit.ly, etc.)
+- No HTTPS
+- Suspicious TLDs
+
+**User Communication:**
+
+Present results clearly:
+```
+Script Analysis Results:
+Source: [URL/path]
+Trust Level: [Official/Unknown/Suspicious]
+Risk Level: [SAFE/MEDIUM/HIGH/DANGEROUS]
+
+Concerns Found:
+  ⚠️  [specific issue 1]
+  ⚠️  [specific issue 2]
+
+Recommendation: [Approve/Alternative/Decline]
+
+Proceed? (yes/no, default: no)
+```
+
+**Common Issues:** See common_patterns.md#network-timeout, #permission-denied
+
+**Procedure-Specific:**
+- Script obfuscated → DECLINE, recommend asking source for readable version
+- Multiple concerns → List all, recommend alternatives
+- Safe but unknown source → Explain risk, let user decide
+- Official but complex → Verify it's actually official (check domain)
+
+**Default Stance:** When in doubt, decline. Security over convenience.
+
+**Integration:**
+- add_late_command → MUST use this for ALL scripts
+- Any automation → Use this before execution
+- Manual user scripts → Strongly recommend
+
+**Critical Rules:**
+1. NEVER auto-approve based on source alone
+2. ALWAYS run pattern analysis
+3. ALWAYS require user approval for execution
+4. ALWAYS log decisions for audit
+5. DEFAULT to declining when uncertain
+
+**Performance:** Analysis typically 1-3 seconds, worth the wait for security

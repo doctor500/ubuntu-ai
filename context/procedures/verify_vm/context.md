@@ -1,65 +1,68 @@
 # VM Verification Context
 
 ## Overview
-Verify the live Ubuntu VM state matches the desired configuration defined in `autoinstall.yaml`.
+Verify live VM state matches expected autoinstall configuration.
 
 ## Goal
-Ensure the target VM's current state (hostname, packages, services) aligns with the configuration file. This enables baselining (update config to match VM) or provisioning (update VM to match config).
+Compare actual VM state (packages, hostname, users, services) against configuration defined in `autoinstall.yaml`. Identifies drift between expected and actual state, enabling synchronization or baselining operations.
 
 ## Triggers
 When should an AI agent invoke this procedure?
-- User asks to "verify VM state" or "check VM configuration"
-- Before provisioning new packages to baseline current state
-- After installing packages to confirm they're present
-- When troubleshooting configuration drift
-- As part of regular maintenance/audit workflow
+- After VM provisioning to confirm success
+- User reports VM behaving unexpectedly
+- Before making configuration changes (establish baseline)
+- As part of VM compliance checking
+- When documenting actual VM state
 
 ## Prerequisites
-Required before running:
-- `context/user_data.json` must exist with VM connection details (`vm_ip`, `vm_username`, `vm_hostname`)
-- `context/autoinstall.yaml` must exist with desired configuration
-- Network connectivity to target VM
-- SSH access to target VM (password or key-based)
-- Target VM must be running and accessible
+**Common:** See common_patterns.md#standard-prerequisites
+
+**Specific:**
+- `context/autoinstall.yaml` must exist (expected configuration)
+- `context/user_data.json` must exist (VM connection details)
+- SSH access to VM configured
+- VM must be reachable and running
 
 ## Logic
-Step-by-step verification flow:
-1. Load VM connection details from `context/user_data.json`
-2. Test network connectivity with ping
-3. SSH into VM to gather current state:
-   - Hostname
-   - OS version and release info
-   - Installed packages (matching autoinstall.yaml list)
-   - Service status (e.g., SSH server)
-4. Compare VM state against `context/autoinstall.yaml`
-5. Report discrepancies:
-   - Missing packages
-   - Incorrect hostname
-   - Disabled services
-6. Offer options:
-   - **Baseline:** Update config to match VM (if VM is source of truth)
-   - **Provision:** Update VM to match config (if config is source of truth)
-   - **Report only:** Just show differences
+Verification workflow:
+1. Load expected config from autoinstall.yaml
+2. Load VM connection details from user_data.json
+3. Test VM connectivity (ping, SSH)
+4. Gather VM state:
+   - Hostname → compare with identity.hostname
+   - Installed packages → compare with packages list
+   - Running services → check critical services
+   - Network config → verify accessibility
+5. Compare expected vs actual
+6. Report: matches, mismatches, missing, extra
+7. Offer actions: baseline config to match VM, provision missing items, log drift
 
 ## Related Files
-- `context/user_data.json` - VM connection details (IP, username, hostname)
-- `context/autoinstall.yaml` - Desired configuration state
-- `procedures/init_user_data/` - Run if user_data.json missing
-- `procedures/validate_config/` - Validate config before comparison
-- `installation_bundles/*/context.md` - Check bundle-specific packages
+- `context/autoinstall.yaml` - Expected configuration
+- `context/user_data.json` - VM connection details
+- `procedures/ssh_key_auth/` - May be needed for access
 
 ## AI Agent Notes
-- **Auto-run Safety:** SAFE for read-only verification; ASK for provisioning/baselining
-- **User Interaction:** Always show comparison results; ask for action if differences found
-- **Common Failures:**
-  - SSH connection timeout → Check VM is running and network accessible
-  - Permission denied → Verify SSH credentials in user_data.json
-  - user_data.json missing → Run init_user_data procedure first
-- **Edge Cases:**
-  - VM state partially matches → Report each discrepancy clearly
-  - Packages installed that aren't in config → Note as "additional packages"
-  - Config has packages VM doesn't → Note as "missing packages"
-- **Error Handling:**
-  - If user_data.json missing, offer to initialize it
-  - If VM unreachable, fail gracefully with clear error message
-  - If autoinstall.yaml missing, suggest init_autoinstall procedure
+**Safety:** SAFE | Read-only verification, no modifications
+
+**User Interaction:** Show clear comparison table (expected vs actual)
+
+**Common Issues:** See common_patterns.md#network-timeout, #permission-denied
+
+**Procedure-Specific:**
+- VM not reachable → Check IP in user_data.json, network connectivity
+- SSH fails → May need ssh_key_auth procedure first
+- Package version differences → Report but not necessarily error (updates normal)
+- Extra packages → Normal (dependencies, auto-installed), document if significant
+
+**Interpretation:**
+- **Match:** VM provisioned correctly ✅
+- **Mismatch:** Hostname wrong, missing packages → Provision issue
+- **Extra packages:** Usually OK (dependencies), note if user-installed
+- **Drift:** Expected after VM use, offer to baseline or re-provision
+
+**Actions After Verification:**
+- **Baseline:** Update autoinstall.yaml to match VM (document current state)
+- **Provision:** Install missing packages on VM
+- **Re-provision:** Start fresh if drift too large
+- **Document:** Log findings for compliance/audit

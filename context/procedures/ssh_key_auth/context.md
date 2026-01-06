@@ -1,77 +1,66 @@
-# SSH Key Authentication Setup Context
+# SSH Key Authentication Context
 
 ## Overview
-Transition VM authentication from password-based to SSH key-based for improved security and automation.
+Set up passwordless SSH key authentication between local machine and VM.
 
 ## Goal
-Set up passwordless SSH authentication using public key cryptography, eliminating the need for manual password entry when connecting to the target VM. This improves security (keys are stronger than passwords) and enables automation (scripts can connect without interaction).
+Configure SSH public key authentication to enable secure, passwordless access to the target VM. This eliminates the need for password prompts during VM operations and procedures, improving automation and security.
 
 ## Triggers
 When should an AI agent invoke this procedure?
-- User requests passwordless SSH access
-- Setting up automated deployment workflows
-- Frequent manual SSH connections become tedious
-- Security policy requires key-based authentication
-- After initial VM provisioning is complete
-- When preparing for automated verification/provisioning scripts
+- User requests "setup SSH keys" or "passwordless SSH"
+- VM operations repeatedly prompt for password
+- Before running automated procedures on VM
+- Setting up new VM for first time
 
-## Prerequisites
-Required before running:
-- `openssh-server` installed and running on target VM
-- `openssh-client` installed on local machine
-- SSH public key exists locally (e.g., `~/.ssh/id_rsa.pub` or `~/.ssh/id_ed25519.pub`)
-- Password access to VM (for initial key copy, one last time)
-- `context/user_data.json` with VM connection details
-- Network connectivity to target VM
+## Prerequisites  
+**Common:** See common_patterns.md#standard-prerequisites, #user-availability
+
+**Specific:**
+- `context/user_data.json` must exist with VM connection details
+- SSH client installed locally
+- Initial password access to VM (for key upload)
+- VM must have SSH server running
 
 ## Logic
-Step-by-step setup flow:
-1. **Pre-flight Checks:**
-   a. Verify SSH server active on VM: `ssh user@vm "systemctl is-active ssh"`
-   b. Verify local SSH public key exists: `ls ~/.ssh/*.pub`
-2. **User Interaction:**
-   - Only proceed if both checks pass
-   - Ask: "SSH key auth is possible. Enable as default?"
-3. **Key Installation:**
-   a. Copy public key to VM's `~/.ssh/authorized_keys`
-   b. Use `ssh-copy-id` (preferred) or manual method
-   c. Requires password input one last time
-4. **Verification:**
-   - Test connection without password: `ssh -o BatchMode=yes user@vm`
-   - Confirm successful passwordless login
-5. **Fallback:**
-   - Standard SSH auto-falls back to password if key fails
-   - Access is never lost
+SSH key setup workflow:
+1. Check if SSH key pair exists locally (~/.ssh/id_rsa)
+2. If missing → Generate new SSH key pair
+3. Load VM details from user_data.json
+4. Test current SSH access to VM
+5. Copy public key to VM's authorized_keys:
+   - Use ssh-copy-id if available
+   - Or manually append to ~/.ssh/authorized_keys
+6. Verify passwordless access works
+7. Recommend disabling password auth on VM (security best practice)
 
 ## Related Files
-- `~/.ssh/id_rsa.pub` or `~/.ssh/id_ed25519.pub` - Local SSH public key
-- `context/user_data.json` - VM connection details (IP, username)
-- `procedures/verify_vm/` - Will benefit from passwordless access
-- `procedures/init_user_data/` - Provides VM details needed here
+- `context/user_data.json` - VM connection details
+- `~/.ssh/id_rsa` - Private key (local)
+- `~/.ssh/id_rsa.pub` - Public key (local)
+- `~/.ssh/authorized_keys` - On VM (key destination)
 
 ## AI Agent Notes
-- **Auto-run Safety:** ASK FIRST - Modifies VM auth config, needs approval
-- **User Interaction:**
-  - Show pre-flight check results
-  - Explain benefits (security, automation, convenience)
-  - Ask for password when running ssh-copy-id
-  - Confirm success after verification
-- **Common Failures:**
-  - No local SSH key → Offer to generate with `ssh-keygen`
-  - SSH server not running → Guide user to enable it
-  - Permission denied during copy → Check VM password
-  - Key copy succeeds but login still prompts → Check file permissions
-- **Edge Cases:**
-  - Multiple SSH keys available → Ask which to use
-  - VM already has some authorized_keys → Append, don't overwrite
-  - Different SSH port → Use `-p` flag with commands
-  - Hostname/IP changed → Update user_data.json first
-- **Error Handling:**
-  - If ssh-copy-id unavailable, use manual method
-  - If verification fails, don't panic - password auth still works
-  - If connection times out, check network/firewall
-- **Security Notes:**
-  - Private key stays on local machine (never copy it)
-  - Set proper permissions: `chmod 600 ~/.ssh/id_rsa`
-  - Consider passphrase-protected keys for extra security
-- **Post-Setup:** Password auth remains available as fallback unless explicitly disabled
+**Safety:** ASK | Modifies VM authentication configuration
+
+**User Interaction:**  
+- Ask password once during key upload
+- Confirm before modifying VM auth settings
+- Recommend (but don't auto-apply) password auth disable
+
+**Common Issues:** See common_patterns.md#permission-denied, #network-timeout
+
+**Procedure-Specific:**
+- SSH key already exists → Use existing, don't regenerate
+- Key upload fails → Check VM SSH server status, firewall
+- Permissions wrong → Fix with chmod 600 ~/.ssh/authorized_keys (on VM)
+- Multiple keys → Add to existing authorized_keys, don't overwrite
+
+**Security Best Practices:**
+- Use strong key (RSA 4096 or Ed25519)
+- Protect private key (chmod 600)
+- Consider passphrase for private key
+- After setup, disable password auth on VM
+- Never share private key
+
+**Post-Setup:** Test with: `ssh user@vm 'echo success'` (should not prompt)
