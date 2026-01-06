@@ -26,6 +26,7 @@ Standardized procedures with `context.md` (why/when) and `procedure.md` (how) pa
 *   **`init_change_log/`**: Initialize change log with Keep a Changelog format.
 *   **`init_user_data/`**: Initialize VM connection data file.
 *   **`maintain_docs/`**: Keep `README.md` synchronized with project structure.
+*   **`passwordless_sudo/`**: Configure passwordless sudo for frictionless administration.
 *   **`ssh_key_auth/`**: Set up passwordless SSH key authentication.
 *   **`validate_config/`**: Validate `autoinstall.yaml` syntax against schema.
 *   **`verify_script/`**: Verify and safely execute scripts from URLs or local files.

@@ -1,0 +1,7 @@
+# Files to include for AI access despite being gitignored
+# These files contain project-specific configuration needed for AI assistance
+# They remain gitignored to protect sensitive data from version control
+
+context/autoinstall.yaml
+context/user_data.json
+context/change_log.md
