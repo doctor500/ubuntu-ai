@@ -27,6 +27,7 @@ Standardized procedures with `context.md` (why/when) and `procedure.md` (how) pa
 *   **`maintain_docs/`**: Keep `README.md` synchronized with project structure.
 *   **`ssh_key_auth/`**: Set up passwordless SSH key authentication.
 *   **`validate_config/`**: Validate `autoinstall.yaml` syntax against schema.
+*   **`verify_script/`**: Verify and safely execute scripts from URLs or local files.
 *   **`verify_vm/`**: Verify live VM state matches configuration.
 
 ## Quick Start
