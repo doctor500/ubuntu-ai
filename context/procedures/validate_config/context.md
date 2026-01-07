@@ -1,56 +1,40 @@
 # Configuration Validation Context
 
 ## Overview
-Validate `autoinstall.yaml` syntax and structure against Canonical's autoinstall schema.
+Validate `autoinstall.yaml` against Canonical's schema.
 
 ## Goal
-Ensure the autoinstall configuration file is syntactically correct and conforms to the official schema before using it for VM provisioning or validation. This prevents errors during installation and ensures compatibility with Ubuntu's Subiquity installer.
+Ensure syntax correctness to prevent installation failures.
 
 ## Triggers
-When should an AI agent invoke this procedure?
-- After creating or modifying `autoinstall.yaml`
-- Before provisioning a VM with the configuration
-- After running init_autoinstall procedure
-- Before committing changes to git
-- When user reports installation errors
-- As part of CI/CD validation pipeline
+- Modification of `autoinstall.yaml`
+- Before provisioning or committing
+- Debugging installation errors
 
 ## Prerequisites
-**Common:** See common_patterns.md#standard-prerequisites
+See common_patterns.md#standard-prerequisites
 
-**Specific:**
-- `context/autoinstall.yaml` must exist (use init_autoinstall if missing)
-- Python 3 and Git installed locally
-- `.tools/subiquity` repository (cloned automatically if missing)
+**Specific:** Python 3, Git, access to `subiquity` repo
 
 ## Logic
-Validation workflow:
-1. Check if `autoinstall.yaml` exists
-2. Check if validation tools set up (`.tools/subiquity`)
-3. If not set up → Install dependencies, clone Subiquity, initialize
-4. Generate JSON schema from Subiquity
-5. Run validation script against `autoinstall.yaml`
-6. Parse results: Exit 0 = success, Exit 1 = errors found
-7. Report results and suggest corrections if needed
+1. **Setup:** Clone `subiquity` repo to `.tools/` if missing
+2. **Schema:** Generate JSON schema from subiquity source
+3. **Validate:** Run `validate-autoinstall-user-data.py`
+4. **Report:** Success or specific syntax error
 
 ## Related Files
-- `context/autoinstall.yaml` - Configuration being validated
-- `context/autoinstall-schema.json` - Generated validation schema
-- `.tools/subiquity/` - Canonical's validation tools (gitignored)
-- `procedures/init_autoinstall/` - Creates autoinstall.yaml if missing
+- `autoinstall.yaml` - Input
+- `.tools/subiquity` - Validator tool source
+- `autoinstall-schema.json` - Generated schema
 
 ## AI Agent Notes
-**Safety:** SAFE | Read-only validation, no file modifications
 
-**User Interaction:** Auto-run after config changes, show results clearly
+**Safety:** SAFE | Read-only validation
 
-**Common Issues:** See common_patterns.md#file-not-found, #yaml-syntax-error, #network-timeout
+**Interaction:** Report pass/fail status
 
-**Procedure-Specific:**
-- First-time setup requires internet (git clone ~1-2 min)
-- System dependencies may need sudo password
-- Validation typically takes 2-5 seconds
-- Schema generation must run from specific directory
-- If validation fails → Parse and display specific error messages with fixes
+**Issues:** See common_patterns.md#yaml-syntax-error
 
-**Performance:** First run 1-2 min (setup), subsequent runs 2-5 sec
+**Specific:**
+- **Sudo:** Do NOT run validation as sudo (tool requirement)
+- **Path:** Must run from within `.tools/subiquity` dir

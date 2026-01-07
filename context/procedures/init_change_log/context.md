@@ -1,51 +1,34 @@
 # Change Log Initialization Context
 
 ## Overview
-Initialize `change_log.md` with Keep a Changelog v1.1.0 standard format.
+Initialize `change_log.md` with Keep a Changelog v1.1.0 standard.
 
 ## Goal
-Create and maintain `context/change_log.md` following Keep a Changelog v1.1.0 standard with Semantic Versioning. Ensures consistent, readable change documentation across the project lifecycle.
+Establish consistent version history documentation using Semantic Versioning.
 
 ## Triggers
-When should an AI agent invoke this procedure?
-- `context/change_log.md` does not exist
-- User explicitly requests "initialize changelog"
-- Before making significant changes requiring documentation
-- Setting up project for first time
+- `change_log.md` missing
+- User requests init
+- First-time project setup
 
 ## Prerequisites
-**Common:** See common_patterns.md#standard-prerequisites
-
-**Specific:**
-- Understanding of Keep a Changelog format
-- Knowledge of Semantic Versioning (MAJOR.MINOR.PATCH)
+See common_patterns.md#standard-prerequisites
 
 ## Logic
-Initialization workflow:
-1. Check if `change_log.md` exists
-2. If missing → Create with standard header and structure
-3. Add [Unreleased] section
-4. Add initial [0.1.0] entry with project initialization
-5. Include all standard sections: Added, Changed, Deprecated, Removed, Fixed, Security
+1. **Check existence:** Warn if overwriting
+2. **Create file:** Write standard header and [Unreleased] section
+3. **Format:** Keep a Changelog v1.1.0 structure
 
 ## Related Files
-- `context/change_log.md` - The changelog (gitignored)
-- All procedures reference this for documentation
+- `change_log.md` - Target file (gitignored)
 
 ## AI Agent Notes
-**Safety:** SAFE | Creates new file with standard template
 
-**Format Requirements:**
-- Use Keep a Changelog v1.1.0 format
-- Follow Semantic Versioning for releases
-- Categories: Added, Changed, Deprecated, Removed, Fixed, Security
-- Date format: YYYY-MM-DD
+**Safety:** SAFE/ASK | Safe if missing
 
-**Common Issues:** See common_patterns.md#file-not-found, #permission-denied
+**Interaction:** Confirm if overwriting
 
-**Procedure-Specific:**
-- File exists but wrong format → Offer to reformat to standard
-- Missing sections → Add during maintenance
-- Version numbering unclear → Explain SemVer rules
-
-**Maintenance:** Use maintain_docs procedure to keep synchronized with actual changes
+**Specific:**
+- **Format:** Added, Changed, Deprecated, Removed, Fixed, Security
+- **Version:** Semantic (MAJOR.MINOR.PATCH)
+- **Unreleased:** Always keep an [Unreleased] section at top

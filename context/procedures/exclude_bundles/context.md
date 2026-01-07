@@ -1,54 +1,40 @@
 # Bundle Exclusion Context
 
 ## Overview
-Generate variant autoinstall configurations that exclude specific installation bundles and their packages.
+Generate variant autoinstall configurations by excluding specific bundles.
 
 ## Goal
-Create customized `autoinstall.yaml` variants for different deployment scenarios by excluding specified installation bundles (e.g., Docker, custom builds). This enables maintaining multiple VM configurations from a single base template without manual package list management.
+Create customized `autoinstall.yaml` variants (e.g., minimal, container-free) from a single base template without manual editing.
 
 ## Triggers
-When should an AI agent invoke this procedure?
-- User requests "minimal" or "lightweight" configuration
-- Creating configuration for specific environments (container-free, restricted, etc.)
-- Testing autoinstall without optional components
-- Generating configs for different VM roles
+- User requests "minimal" or "lightweight" config
+- Creating role-specific configurations
+- Testing without optional components
 
 ## Prerequisites
-**Common:** See common_patterns.md#standard-prerequisites
+See common_patterns.md#standard-prerequisites
 
-**Specific:**
-- `context/autoinstall.yaml` must exist (master configuration)
-- Installation bundle(s) to exclude must have `context.md` files
-- Bundle `context.md` must list "Packages Installed"
-- Understanding of which bundles can be safely excluded
+**Specific:** `autoinstall.yaml` (master config)
 
 ## Logic
-Exclusion workflow:
-1. User specifies bundle(s) to exclude (e.g., "docker")
-2. For each bundle → Read bundle context.md → Extract package list
-3. Identify bundle-specific apt sources (check comments in autoinstall.yaml)
-4. Load master autoinstall.yaml
-5. Remove: Bundle packages, apt sources, related configurations
-6. Generate variant filename (e.g., autoinstall-no-docker.yaml)
-7. Validate variant configuration
-8. Save to designated location
+1. **Identify exclusions:** User selects bundles to remove (e.g., docker)
+2. **Scan master config:** Find packages and late-commands owned by bundles
+3. **Filter content:** Remove associated lines
+4. **Generate variant:** Save as `autoinstall-<variant>.yaml`
+5. **Validate:** Run `validate_config` on new file
 
 ## Related Files
-- `context/autoinstall.yaml` - Master configuration
-- `context/installation_bundles/*/context.md` - Bundle definitions
-- Generated variants: `autoinstall-no-{bundle}.yaml`
+- `autoinstall-minimal.yaml` - Typical output
+- `installation_bundles/` - Source of package lists
 
 ## AI Agent Notes
-**Safety:** SAFE | Generates new file, doesn't modify original
 
-**User Interaction:** Confirm bundle exclusion list, show package count being removed
+**Safety:** SAFE | Creates new file, does not modify master
 
-**Common Issues:** See common_patterns.md#file-not-found
+**Interaction:** Ask which bundles to exclude, suggest "minimal"
 
-**Procedure-Specific:**
-- Bundle context missing packages list → Can't auto-exclude, ask user for manual list
-- Circular dependencies → Warn if removing package needed by remaining bundles
-- Multiple bundle exclusion → Process in order, check for conflicts
-- Variant naming → Use descriptive names (autoinstall-minimal.yaml vs autoinstall-no-docker-no-build.yaml)
+**Issues:** See common_patterns.md#file-not-found
 
-**Validation:** Always run validate_config on generated variant before use
+**Specific:**
+- Does NOT verify if exclusion breaks dependencies
+- Use `diff` to show what was removed

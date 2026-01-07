@@ -1,53 +1,37 @@
 # Documentation Maintenance Context
 
 ## Overview
-Keep `README.md` synchronized with actual project structure and procedures.
+Keep `README.md` synchronized with project structure.
 
 ## Goal
-Automatically update project README to reflect current state: available procedures, file structure, installation bundles. Ensures documentation stays accurate as project evolves without manual tracking of changes.
+Ensure documentation accurately reflects available procedures and bundles without manual updates.
 
 ## Triggers
-When should an AI agent invoke this procedure?
-- New procedure added to `context/procedures/`
-- New installation bundle added to `context/installation_bundles/`
-- Project structure changes significantly
-- User reports documentation out of sync
-- As part of pre-commit workflow
+- New procedure or bundle added
+- Structure changes
+- Documentation out of sync
+- Pre-commit check
 
 ## Prerequisites
-**Common:** See common_patterns.md#standard-prerequisites
-
-**Specific:**
-- `README.md` exists in repository root
-- Project follows standard directory structure
-- Procedure directories contain context.md files
+See common_patterns.md#standard-prerequisites
 
 ## Logic
-Maintenance workflow:
-1. Scan `context/procedures/` for all procedure directories
-2. Extract procedure names and descriptions from context.md files
-3. Scan `context/installation_bundles/` for bundles
-4. Compare with current README.md content
-5. If differences found → Generate updates
-6. Show diff to user for approval
-7. Apply changes to README.md
+1. **Scan directories:** List `context/procedures` and `installation_bundles`
+2. **Read descriptions:** Extract from each `context.md`
+3. **Update README:** Regenerate lists in relevant sections
+4. **Verify:** Check links match folder names
 
 ## Related Files
-- `README.md` - Main project documentation
-- `context/procedures/*/context.md` - Source of procedure info
-- `context/installation_bundles/*/context.md` - Source of bundle info
+- `README.md` - Target file
+- `context/procedures/` - Source
+- `context/installation_bundles/` - Source
 
 ## AI Agent Notes
-**Safety:** ASK | Modifies documentation, show diff first
 
-**User Interaction:** Always show diff before applying, get approval
+**Safety:** ASK | Modifies README
 
-**Common Issues:** See common_patterns.md#permission-denied
+**Interaction:** Confirm updates found
 
-**Procedure-Specific:**
-- README structure changed → May need manual review
-- Procedure missing description → Use directory name as fallback
-- Multiple updates needed → Batch into single commit
-- User customized README → Preserve custom sections, only update procedure list
-
-**Best Practice:** Run before committing new procedures or bundles
+**Specific:**
+- **Extraction:** Read first line or "Overview" section
+- **Formatting:** Use list format `* **[name]**: [description]`
