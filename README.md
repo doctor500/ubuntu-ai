@@ -18,6 +18,7 @@ Optional software packages with installation procedures:
 
 *   **`docker/`**: Docker Engine installation (historical reference, containerd used instead)
 *   **`kubeadm/`**: Single-node Kubernetes cluster (kubeadm, kubelet, kubectl, nerdctl)
+*   **`shell_tools/`**: Homebrew and Oh My Zsh for enhanced shell experience
 
 ### `context/procedures/`
 Standardized procedures with `context.md` (why/when) and `procedure.md` (how) pattern:
