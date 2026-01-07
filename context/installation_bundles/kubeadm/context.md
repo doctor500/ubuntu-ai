@@ -1,117 +1,65 @@
 # Kubeadm Installation Bundle Context
 
 ## Overview
-Install kubeadm, kubelet, and kubectl to set up a single-node Kubernetes cluster on Ubuntu 24.04.
+Single-node Kubernetes cluster using kubeadm, kubelet, kubectl, and nerdctl.
 
 ## Goal
-Provision the VM with all Kubernetes components needed to run a single-node cluster for local development, testing, and learning. The node acts as both control plane and worker, allowing pods to be scheduled on it.
+Provision a VM with Kubernetes for local development/testing. Node acts as both control plane and worker.
 
 ## Triggers
-When should an AI agent invoke this procedure?
 - User requests Kubernetes installation
-- Setting up local development environment with K8s
-- User wants container orchestration beyond containerd
-- Following autoinstall.yaml that includes kubeadm packages
+- Setting up local K8s environment
+- Following autoinstall.yaml with kubeadm packages
 
 ## Prerequisites
-**Common:** See common_patterns.md#standard-prerequisites
+See common_patterns.md#standard-prerequisites
 
 **Specific:**
-- containerd.io installed (we have it ✅)
+- containerd.io installed ✅
 - Passwordless sudo configured (recommended)
-- Internet connectivity
-- Minimum: 2 vCPU, 4GB RAM, 20GB disk
+- Min: 2 vCPU, 4GB RAM, 20GB disk
 
 ## Single-Node vs Multi-Node
 
-| Aspect | Single-Node (This Bundle) | Multi-Node (Future) |
-|--------|---------------------------|---------------------|
-| **Nodes** | 1 VM = control plane + worker | Separate VMs |
-| **Use Case** | Dev/test, learning | Production, HA |
-| **Setup** | `kubeadm init` + untaint | `kubeadm init` + `join` |
-| **Complexity** | Low | Higher |
-| **Time** | ~5 minutes | ~15-30 minutes |
+| Aspect | Single-Node | Multi-Node |
+|--------|-------------|------------|
+| Nodes | 1 VM (all-in-one) | Separate VMs |
+| Setup | init + untaint | init + join |
+| Time | ~5 min | ~15-30 min |
 
-**Key Difference:** Single-node removes control-plane taint so pods can run on it.
+## Components
 
-## Components Installed
-
-### Core Kubernetes
 | Package | Purpose |
 |---------|---------|
-| **kubelet** | Node agent |
-| **kubeadm** | Bootstrap tool |
-| **kubectl** | CLI |
-
-### Container Runtime
-| Package | Purpose |
-|---------|---------|
-| **containerd.io** | Container runtime (already installed) |
-| **nerdctl** | Docker-compatible CLI for containerd |
-
-### Network Support
-| Package | Purpose |
-|---------|---------|
-| **socat** | kubectl port-forward |
-| **conntrack** | kube-proxy |
+| kubelet | Node agent |
+| kubeadm | Bootstrap tool |
+| kubectl | CLI |
+| containerd.io | Container runtime |
+| nerdctl | Docker-compatible CLI |
+| socat, conntrack | Network support |
 
 ## Logic
-Installation workflow:
-
-### Phase 1: System Configuration
-1. Load kernel modules (overlay, br_netfilter)
-2. Configure sysctl (IP forwarding)
-3. Disable swap
-4. Configure containerd (SystemdCgroup)
-
-### Phase 2: Install Packages
-1. Add Kubernetes apt repository
-2. Install kubelet, kubeadm, kubectl
-3. Install socat, conntrack
-4. Hold packages (prevent auto-upgrade)
-
-### Phase 3: Initialize Cluster
-1. Run kubeadm init
-2. Configure kubectl for user
-3. Remove control-plane taint
-4. Install Flannel CNI
-5. Verify with kubectl get nodes
+1. **System config:** Modules, sysctl, disable swap, configure containerd
+2. **Install packages:** Add K8s repo, install kubelet/kubeadm/kubectl, hold versions
+3. **Install nerdctl:** Download from GitHub releases
+4. **Initialize cluster:** kubeadm init, configure kubectl, untaint, install Flannel
 
 ## Related Files
-- `context/autoinstall.yaml` - Packages and late-commands
-- `installation_bundles/kubeadm/procedure.md` - Step-by-step commands
-- `procedures/passwordless_sudo/` - Recommended prerequisite
-
-## CNI Options
-| Plugin | Complexity | Best For |
-|--------|------------|----------|
-| **Flannel** ⭐ | Simple | Single-node, learning |
-| Calico | Medium | Production |
-| Cilium | Complex | Advanced |
-
-**Default:** Flannel
+- `autoinstall.yaml` - Packages and late-commands
+- `kubeadm/procedure.md` - Step-by-step commands
 
 ## AI Agent Notes
+
 **Safety:** ASK | Significant system changes
 
-**User Interaction:**
-- Confirm Kubernetes installation
-- Explain single-node mode
-- Note post-install steps (kubeadm init)
+**Interaction:** Confirm K8s install, explain single-node mode, note post-install steps
 
-**Common Issues:** See common_patterns.md#network-timeout, #permission-denied
+**Issues:** See common_patterns.md#network-timeout, #command-not-found
 
-**Procedure-Specific:**
+**Specific:**
 - Swap not disabled → kubeadm init fails
-- containerd not configured → Pods fail to start
-- No CNI → Nodes stay NotReady
-- kubelet not starting → Check journalctl -xeu kubelet
+- No CNI → Node stays NotReady
+- kubelet issues → `journalctl -xeu kubelet`
+- Post-install required: Run `k8s-init-single-node.sh`
 
-**Post-Install Required:**
-```bash
-# Run after VM provisioning:
-k8s-init-single-node.sh
-# or manual kubeadm init steps
-```
-
-**Version:** Kubernetes v1.31 (stable)
+**Version:** Kubernetes v1.31, nerdctl v2.2.1

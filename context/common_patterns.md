@@ -157,6 +157,58 @@ This document contains shared patterns, prerequisites, and troubleshooting guide
 
 ---
 
+## Pre-Execution Check Template
+
+For procedures with external dependencies, add this section at the start of procedure.md:
+
+```markdown
+## Pre-Execution: Verify Procedure is Current
+
+**Official Documentation:**
+- [Tool Name]: [URL]
+
+**Last Verified:** YYYY-MM-DD
+
+**Versions Used:** (if applicable)
+- [component]: [version]
+
+**Quick Verification:**
+```bash
+# Check if key URL/resource is accessible
+curl -I [key_url] 2>&1 | head -1
+# Expected: HTTP/2 200
+```
+
+**If outdated:** [Action to take]
+```
+
+**When to include:** Procedures that depend on external URLs, install scripts, or versioned tools.
+
+---
+
+## AI Agent Notes Format
+
+Standard format for context.md AI guidance:
+
+```markdown
+## AI Agent Notes
+
+**Safety:** SAFE | ASK | NEVER
+**Interaction:** [One-line guidance]
+**Issues:** See common_patterns.md#[section]
+**Specific:** [Procedure-specific notes only]
+```
+
+| Safety Level | Meaning | Action |
+|--------------|---------|--------|
+| SAFE | Read-only or safe creation | Auto-run |
+| ASK | Modifies config/state | Confirm first |
+| NEVER | Security-sensitive | Explicit approval |
+
+See: common_patterns.md#standard-safety-levels for full details.
+
+---
+
 ## Response Templates
 
 ### Missing File Template

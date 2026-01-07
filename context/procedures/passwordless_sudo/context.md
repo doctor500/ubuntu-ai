@@ -1,82 +1,52 @@
 # Passwordless Sudo Context
 
 ## Overview
-Configure user for passwordless sudo access to eliminate password prompts during system administration.
+Configure user for passwordless sudo access.
 
 ## Goal
-Enable the primary user to execute sudo commands without password prompts. This improves workflow efficiency, enables automation scripts, and reduces friction during installation procedures (like kubeadm setup).
+Enable sudo without password prompts for workflow efficiency and automation.
 
 ## Triggers
-When should an AI agent invoke this procedure?
-- Before running installation procedures that require multiple sudo commands
-- User requests "setup passwordless sudo"
-- Setting up automation that needs sudo access
-- User frustrated with repeated password prompts
+- Before installation procedures with multiple sudo commands
+- User requests passwordless sudo
+- Setting up automation requiring sudo
 
 ## Prerequisites
-**Common:** See common_patterns.md#standard-prerequisites
+See common_patterns.md#standard-prerequisites
 
-**Specific:**
-- User must have sudo privileges (in sudo group)
-- Initial password access (to run the setup command)
-- Know the username to configure
+**Specific:** User in sudo group, initial password access
 
 ## Logic
-Setup workflow:
-1. Verify user is in sudo group
-2. Create sudoers.d drop-in file for the user
-3. Set proper file permissions (440)
-4. Verify passwordless sudo works
-5. (Optional) Add to autoinstall.yaml for new VMs
+1. Verify user in sudo group
+2. Create `/etc/sudoers.d/90-nopasswd-{username}`
+3. Set permissions 440
+4. Verify with `sudo -n true`
+5. (Optional) Add to autoinstall.yaml
 
-## Security Considerations
+## Security Trade-offs
 
-**⚠️ Important Trade-offs:**
+| Aspect | With Password | Without |
+|--------|--------------|---------|
+| Security | Higher | Lower |
+| Convenience | Lower | Higher |
+| Automation | Harder | Easier |
 
-| Aspect | With Password | Without Password |
-|--------|--------------|------------------|
-| **Security** | Higher | Lower |
-| **Convenience** | Lower | Higher |
-| **Automation** | Harder | Easier |
-| **Risk** | Unauthorized access blocked | Any session can sudo |
-
-**Recommended Use Cases:**
-- ✅ Development VMs
-- ✅ Local testing environments
-- ✅ Single-user workstations
-- ❌ Production servers (use with caution)
-- ❌ Shared systems
-
-**Mitigation:**
-- Keep SSH key authentication (no password SSH ok, but keys required)
-- Lock session when away
-- Ensure physical security of device
+**Recommended:** ✅ Dev VMs, local testing | ❌ Production, shared systems
 
 ## Related Files
 - `/etc/sudoers.d/90-nopasswd-{username}` - Created file
-- `context/user_data.json` - Source of username
-- `context/autoinstall.yaml` - Can include this in late-commands
+- `autoinstall.yaml` - Include as FIRST late-command
 
 ## AI Agent Notes
-**Safety:** ASK | Reduces system security, user must understand trade-off
 
-**User Interaction:**
-- Explain security implications
-- Confirm user understands the trade-off
-- Ask for username if not available from user_data.json
+**Safety:** ASK | Reduces security, explain trade-off
 
-**Common Issues:** See common_patterns.md#permission-denied
+**Interaction:** Explain implications, confirm understanding
 
-**Procedure-Specific:**
-- File permissions wrong → Must be 440, owned by root
-- Syntax error in sudoers → Can lock out sudo, use visudo to test
-- Wrong username → Double-check spelling
-- User not in sudo group → Add user to sudo group first
+**Issues:** See common_patterns.md#permission-denied
 
-**Autoinstall Integration:**
-Place as FIRST late-command to enable passwordless sudo before other installations run.
-
-**Verification:**
-```bash
-sudo -n true && echo "Passwordless sudo works!" || echo "Still requires password"
-```
+**Specific:**
+- Permissions must be 440, owned by root
+- Syntax error → Use visudo to test
+- Must be FIRST late-command in autoinstall
+- Verify: `sudo -n true && echo "Works!"`
