@@ -40,6 +40,10 @@ sudo apt-get install -y zsh
 RUNZSH=no sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
 echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"' >> ~/.zshrc
 
+# Install Tools
+eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+brew install k9s
+
 # Set zsh as default
 sudo chsh -s $(which zsh) $USER
 ```
@@ -78,7 +82,18 @@ brew --version
 RUNZSH=no sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
 ```
 
-### 5. Configure Zsh
+### 5. Install Additional Tools (k9s)
+
+```bash
+# Ensure brew is loaded
+eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+brew install k9s
+
+# Verify
+k9s version
+```
+
+### 6. Configure Zsh
 
 ```bash
 # Add brew to zsh
@@ -88,7 +103,7 @@ echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"' >> ~/.zshrc
 sudo chsh -s $(which zsh) $USER
 ```
 
-### 6. Verify
+### 7. Verify
 
 ```bash
 zsh -c "source ~/.zshrc && brew --version && echo OMZ: \$ZSH"
@@ -137,6 +152,13 @@ plugins=(git docker kubectl zsh-autosuggestions zsh-syntax-highlighting)
   curtin in-target --target=/target -- su - USERNAME -c '
   RUNZSH=no sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
   echo "eval \"\$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)\"" >> ~/.zshrc
+  '
+
+# Install k9s (via Homebrew)
+- |
+  curtin in-target --target=/target -- su - USERNAME -c '
+  eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+  brew install k9s
   '
 
 # Set default shell

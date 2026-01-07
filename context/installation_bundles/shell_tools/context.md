@@ -31,6 +31,7 @@ When should an AI agent invoke this procedure?
 | **Homebrew** | Linux package manager |
 | **Zsh** | Z shell |
 | **Oh My Zsh** | Zsh configuration framework |
+| **k9s** | Kubernetes CLI TUI |
 
 ## Logic
 Installation workflow:
