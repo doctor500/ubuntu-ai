@@ -1,5 +1,27 @@
 # SSH Key Authentication Setup Procedure
 
+## Pre-Execution: Verify Procedure is Current
+
+**Official Documentation:**
+- OpenSSH: https://www.openssh.com/manual.html
+- Ubuntu SSH Guide: https://ubuntu.com/server/docs/openssh-server
+- ssh-copy-id: https://www.ssh.com/academy/ssh/copy-id
+
+**Last Verified:** 2026-01-05
+
+**Note:** SSH key authentication is a stable, long-established standard. Changes are rare.
+
+**Quick Verification:**
+```bash
+# Check ssh-copy-id is available
+which ssh-copy-id
+# Expected: /usr/bin/ssh-copy-id
+```
+
+**If outdated:** Check Ubuntu SSH documentation for any changes.
+
+---
+
 ## 1. Automated Pre-flight Checks
 Before prompting the user, verify the environment.
 

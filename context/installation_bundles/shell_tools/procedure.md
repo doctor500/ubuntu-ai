@@ -1,5 +1,30 @@
 # Shell Tools Installation Procedure
 
+## Pre-Execution: Verify Procedure is Current
+
+**Official Documentation:**
+- Homebrew: https://brew.sh/ and https://docs.brew.sh/Homebrew-on-Linux
+- Oh My Zsh: https://ohmyz.sh/ and https://github.com/ohmyzsh/ohmyzsh
+
+**Last Verified:** 2026-01-07
+
+**Note:** Both tools use dynamic install scripts that auto-update, so versions are always latest.
+
+**Quick Verification:**
+```bash
+# Check if Homebrew install script is accessible
+curl -I https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh 2>&1 | head -1
+# Expected: HTTP/2 200
+
+# Check if OMZ install script is accessible
+curl -I https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh 2>&1 | head -1
+# Expected: HTTP/2 200
+```
+
+**If outdated:** Check official docs for installation method changes.
+
+---
+
 ## Quick Install (Current VM)
 
 ```bash

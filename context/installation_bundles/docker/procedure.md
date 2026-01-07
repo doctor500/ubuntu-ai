@@ -1,5 +1,28 @@
 # Docker Installation Procedure
 
+## Pre-Execution: Verify Procedure is Current
+
+**Official Documentation:**
+- Docker Install: https://docs.docker.com/engine/install/ubuntu/
+- Docker Release Notes: https://docs.docker.com/engine/release-notes/
+
+**Last Verified:** 2026-01-05
+
+**Note:** This bundle is historical reference. Current config uses standalone containerd.io for Kubernetes.
+
+**Quick Verification:**
+```bash
+# Check if Docker GPG key URL is valid
+curl -I https://download.docker.com/linux/ubuntu/gpg 2>&1 | head -1
+# Expected: HTTP/2 200
+
+# Check official docs for any installation changes
+```
+
+**If outdated:** Compare with official docs link above.
+
+---
+
 **Reference:** https://docs.docker.com/engine/install/ubuntu/
 
 ## 1. Clean Up Old Versions

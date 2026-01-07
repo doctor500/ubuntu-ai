@@ -1,5 +1,32 @@
 # Kubeadm Installation Procedure
 
+## Pre-Execution: Verify Procedure is Current
+
+**Official Documentation:**
+- Kubernetes: https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/
+- nerdctl: https://github.com/containerd/nerdctl/releases
+
+**Last Verified:** 2026-01-07
+
+**Versions Used:**
+- Kubernetes: v1.31
+- nerdctl: v2.2.1
+
+**Quick Verification:**
+```bash
+# Check if Kubernetes repo is accessible
+curl -I https://pkgs.k8s.io/core:/stable:/v1.31/deb/Release.key 2>&1 | head -1
+# Expected: HTTP/2 200
+
+# Check latest nerdctl version
+curl -s https://api.github.com/repos/containerd/nerdctl/releases/latest | grep tag_name
+# Compare with v2.2.1 above
+```
+
+**If outdated:** Update versions in this procedure and autoinstall.yaml.
+
+---
+
 ## Phase 1: System Configuration
 
 ### 1.1 Load Kernel Modules

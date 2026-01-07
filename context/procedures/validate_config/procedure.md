@@ -1,5 +1,28 @@
 # Configuration Validation Procedure
 
+## Pre-Execution: Verify Procedure is Current
+
+**Official Documentation:**
+- Subiquity Autoinstall: https://canonical-subiquity.readthedocs-hosted.com/en/latest/
+- Validation Guide: https://canonical-subiquity.readthedocs-hosted.com/en/latest/howto/autoinstall-validation.html
+- Subiquity Repo: https://github.com/canonical/subiquity
+
+**Last Verified:** 2026-01-06
+
+**Quick Verification:**
+```bash
+# Check if Subiquity repo is accessible
+curl -I https://github.com/canonical/subiquity 2>&1 | head -1
+# Expected: HTTP/2 200
+
+# If .tools/subiquity exists, check for updates
+cd .tools/subiquity && git fetch && git status
+```
+
+**If outdated:** Pull latest Subiquity and regenerate schema.
+
+---
+
 **Reference:** https://canonical-subiquity.readthedocs-hosted.com/en/latest/howto/autoinstall-validation.html
 
 ## 1. Verify Prerequisites
