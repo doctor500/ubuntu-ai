@@ -14,8 +14,10 @@ The core directory containing all configuration and documentation.
 *   **`user_data.json`**: (Ignored by git) Stores personalized/sensitive data like IPs and usernames.
 
 ### `context/installation_bundles/`
-Contains "Bundles" for complex installations (e.g., Docker) that require multiple steps/packages.
-*   **Example:** `docker/` contains the context and procedure for installing Docker Engine.
+Optional software packages with installation procedures:
+
+*   **`docker/`**: Docker Engine installation (historical reference, containerd used instead)
+*   **`kubeadm/`**: Single-node Kubernetes cluster (kubeadm, kubelet, kubectl, nerdctl)
 
 ### `context/procedures/`
 Standardized procedures with `context.md` (why/when) and `procedure.md` (how) pattern:
