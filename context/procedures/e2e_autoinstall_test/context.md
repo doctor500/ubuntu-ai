@@ -81,7 +81,7 @@ See common_patterns.md#standard-prerequisites
 - `ubuntu-desktop-minimal` breaks SSH password authentication when installed during autoinstall
 - Root cause: GDM3/PAM configuration changes interfere with SSH password auth
 - Solution: Install desktop in Phase 2 via first-boot systemd service AFTER SSH is available
-- Template: `context/procedures/install_desktop_phase2/files/autoinstall-2phase.yaml`
+- Template: `context/autoinstall.example.yaml` (unified template with Phase 2 built-in)
 
 **Heredoc Escaping (CRITICAL):**
 - Heredocs (`<< EOF`) do NOT work reliably in autoinstall late-commands
