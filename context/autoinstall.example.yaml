@@ -1,65 +1,167 @@
 #cloud-config
-# Ubuntu Desktop Autoinstall Example Configuration
+# Ubuntu Desktop Autoinstall Configuration - Unified Template
 # 
-# This is a TEMPLATE file. To use it:
-# 1. Copy this file: cp context/autoinstall.example.yaml context/autoinstall.yaml
-# 2. Edit context/autoinstall.yaml with your actual values
-# 3. Never commit your personalized autoinstall.yaml (it's gitignored)
+# This single file handles:
+# - Base system installation
+# - SSH configuration
+# - Kubernetes (containerd, kubeadm, kubelet, kubectl)
+# - Shell tools (Homebrew, Oh My Zsh, K9s)
+# - Desktop installation via Phase 2 first-boot service
 #
-# Reference: https://canonical-subiquity.readthedocs-hosted.com/en/latest/
+# Key Learnings Applied:
+# 1. Desktop packages are installed on FIRST BOOT (not during autoinstall)
+#    because ubuntu-desktop-minimal breaks SSH password auth
+# 2. External repos (Docker, K8s) are added in early-commands
+# 3. Heredocs don't work - use simple echo commands instead
 
 autoinstall:
   version: 1
   
+  # ============================================
+  # IDENTITY (Customize these values)
+  # ============================================
   identity:
-    # Set your desired hostname
-    hostname: ubuntu-desktop-vm
-    
-    # Set your username
-    username: myuser
-    
-    # Password hash (REQUIRED)
-    # Generate with: mkpasswd -m sha-512
-    # Example command: mkpasswd -m sha-512 "YourPasswordHere"
-    # NEVER use a plaintext password or commit your actual hash!
-    password: "$6$rounds=4096$EXAMPLESALT$ExampleHashValue.PleaseGenerateYourOwnHashUsingMkpasswdCommand"
+    hostname: your-hostname
+    username: your-username
+    # Generate hash: echo 'your-password' | openssl passwd -6 -stdin
+    password: "$6$rounds=4096$SALT$HASH"
   
-  # System locale
   locale: en_US.UTF-8
   
-  # Keyboard layout
   keyboard:
     layout: us
   
-  # SSH configuration
   ssh:
     install-server: true
     allow-pw: true
-    # For production, consider:
-    # - Setting allow-pw: false after SSH key setup
-    # - Adding authorized_keys in user-data section
-  
-  # Packages to install
-  # Add or remove packages based on your needs
-  packages:
-    # Desktop environment
-    - ubuntu-desktop-minimal
-    # or use: ubuntu-desktop (full desktop)
+
+  # ============================================
+  # EARLY-COMMANDS: Add external repositories
+  # ============================================
+  early-commands:
+    # Docker repo (for containerd.io)
+    - apt-get update
+    - apt-get install -y ca-certificates curl gnupg
+    - install -m 0755 -d /etc/apt/keyrings
+    - curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+    - chmod a+r /etc/apt/keyrings/docker.gpg
+    - echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu jammy stable" > /etc/apt/sources.list.d/docker.list
     
-    # Development tools
+    # Kubernetes repo
+    - curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.31/deb/Release.key | gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+    - echo "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.31/deb/ /" > /etc/apt/sources.list.d/kubernetes.list
+    
+    # Update cache
+    - apt-get update
+
+  # ============================================
+  # PACKAGES (NO desktop packages here!)
+  # Desktop is installed in Phase 2 via first-boot service
+  # ============================================
+  packages:
+    # Basic utilities
     - git
     - neofetch
     - net-tools
+    - curl
+    - ca-certificates
+    - build-essential
     
-    # Docker bundle (requires repository setup - see installation_bundles/docker/)
-    # Uncomment these after adding Docker repository to sources
-    # - docker-ce
-    # - docker-ce-cli
-    # - containerd.io
-    # - docker-buildx-plugin
-    # - docker-compose-plugin
+    # Shell
+    - zsh
     
-    # Add your additional packages here:
-    # - vim
-    # - curl
-    # - build-essential
+    # Container Runtime
+    - containerd.io
+    
+    # Kubernetes (v1.31)
+    - kubelet
+    - kubeadm
+    - kubectl
+    - socat
+    - conntrack
+
+  # ============================================
+  # LATE-COMMANDS
+  # Order: sudo → k8s → tools → shell → phase2
+  # ============================================
+  late-commands:
+    # ===== 1. PASSWORDLESS SUDO =====
+    - curtin in-target --target=/target -- bash -c 'echo "your-username ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/90-nopasswd && chmod 440 /etc/sudoers.d/90-nopasswd'
+    
+    # ===== 2. HOLD KUBERNETES PACKAGES =====
+    - curtin in-target --target=/target -- apt-mark hold kubelet kubeadm kubectl
+    
+    # ===== 3. KERNEL MODULES =====
+    - curtin in-target --target=/target -- bash -c 'echo -e "overlay\nbr_netfilter" > /etc/modules-load.d/k8s.conf'
+    
+    # ===== 4. KERNEL PARAMETERS =====
+    - curtin in-target --target=/target -- bash -c 'echo "net.bridge.bridge-nf-call-ip6tables = 1" > /etc/sysctl.d/k8s.conf'
+    - curtin in-target --target=/target -- bash -c 'echo "net.bridge.bridge-nf-call-iptables = 1" >> /etc/sysctl.d/k8s.conf'
+    - curtin in-target --target=/target -- bash -c 'echo "net.ipv4.ip_forward = 1" >> /etc/sysctl.d/k8s.conf'
+    
+    # ===== 5. DISABLE SWAP =====
+    - curtin in-target --target=/target -- sed -i '/swap/d' /etc/fstab
+    
+    # ===== 6. CONFIGURE CONTAINERD =====
+    - curtin in-target --target=/target -- bash -c 'mkdir -p /etc/containerd && containerd config default > /etc/containerd/config.toml'
+    - curtin in-target --target=/target -- sed -i 's/SystemdCgroup = false/SystemdCgroup = true/' /etc/containerd/config.toml
+    
+    # ===== 7. ENABLE SERVICES =====
+    - curtin in-target --target=/target -- systemctl enable containerd
+    - curtin in-target --target=/target -- systemctl enable kubelet
+    
+    # ===== 8. SET DEFAULT SHELL TO ZSH =====
+    - curtin in-target --target=/target -- chsh -s /usr/bin/zsh your-username
+    
+    # ===== 9. PHASE 2: CREATE FIRST-BOOT SCRIPT =====
+    # This script runs on first boot to install desktop + shell tools
+    - curtin in-target --target=/target -- bash -c 'echo "#!/bin/bash" > /usr/local/bin/first-boot-phase2.sh'
+    - curtin in-target --target=/target -- bash -c 'echo "set -e" >> /usr/local/bin/first-boot-phase2.sh'
+    - curtin in-target --target=/target -- bash -c 'echo "[ -f /var/lib/phase2-complete ] && exit 0" >> /usr/local/bin/first-boot-phase2.sh'
+    - curtin in-target --target=/target -- bash -c 'echo "export DEBIAN_FRONTEND=noninteractive" >> /usr/local/bin/first-boot-phase2.sh'
+    - curtin in-target --target=/target -- bash -c 'echo "exec > >(tee -a /var/log/phase2.log) 2>&1" >> /usr/local/bin/first-boot-phase2.sh'
+    - curtin in-target --target=/target -- bash -c 'echo "echo === Phase 2: Installing Desktop ===" >> /usr/local/bin/first-boot-phase2.sh'
+    - curtin in-target --target=/target -- bash -c 'echo "sleep 30" >> /usr/local/bin/first-boot-phase2.sh'
+    - curtin in-target --target=/target -- bash -c 'echo "apt-get update" >> /usr/local/bin/first-boot-phase2.sh'
+    - curtin in-target --target=/target -- bash -c 'echo "apt-get install -y ubuntu-desktop-minimal" >> /usr/local/bin/first-boot-phase2.sh'
+    - curtin in-target --target=/target -- bash -c 'echo "echo === Phase 2: Installing Shell Tools ===" >> /usr/local/bin/first-boot-phase2.sh'
+    - curtin in-target --target=/target -- bash -c 'echo "su - your-username -c \"NONINTERACTIVE=1 /bin/bash -c \\\"\\$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)\\\"\"" >> /usr/local/bin/first-boot-phase2.sh'
+    - curtin in-target --target=/target -- bash -c 'echo "su - your-username -c \"echo eval \\\\\\\"\\$(\\$(echo /home/linuxbrew/.linuxbrew)/bin/brew shellenv)\\\\\\\" >> ~/.bashrc\"" >> /usr/local/bin/first-boot-phase2.sh'
+    - curtin in-target --target=/target -- bash -c 'echo "su - your-username -c \"RUNZSH=no sh -c \\\"\\$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)\\\"\"" >> /usr/local/bin/first-boot-phase2.sh'
+    - curtin in-target --target=/target -- bash -c 'echo "su - your-username -c \"echo eval \\\\\\\"\\$(\\$(echo /home/linuxbrew/.linuxbrew)/bin/brew shellenv)\\\\\\\" >> ~/.zshrc\"" >> /usr/local/bin/first-boot-phase2.sh'
+    - curtin in-target --target=/target -- bash -c 'echo "su - your-username -c \"eval \\$(\\$(echo /home/linuxbrew/.linuxbrew)/bin/brew shellenv) && brew install k9s\"" >> /usr/local/bin/first-boot-phase2.sh'
+    - curtin in-target --target=/target -- bash -c 'echo "touch /var/lib/phase2-complete" >> /usr/local/bin/first-boot-phase2.sh'
+    - curtin in-target --target=/target -- bash -c 'echo "systemctl disable first-boot-phase2.service" >> /usr/local/bin/first-boot-phase2.sh'
+    - curtin in-target --target=/target -- bash -c 'echo "echo === Phase 2 Complete! Rebooting... ===" >> /usr/local/bin/first-boot-phase2.sh'
+    - curtin in-target --target=/target -- bash -c 'echo "reboot" >> /usr/local/bin/first-boot-phase2.sh'
+    - curtin in-target --target=/target -- chmod +x /usr/local/bin/first-boot-phase2.sh
+    
+    # ===== 10. PHASE 2: CREATE SYSTEMD SERVICE =====
+    - curtin in-target --target=/target -- bash -c 'echo "[Unit]" > /etc/systemd/system/first-boot-phase2.service'
+    - curtin in-target --target=/target -- bash -c 'echo "Description=Phase 2: Install Desktop and Shell Tools" >> /etc/systemd/system/first-boot-phase2.service'
+    - curtin in-target --target=/target -- bash -c 'echo "After=network-online.target" >> /etc/systemd/system/first-boot-phase2.service'
+    - curtin in-target --target=/target -- bash -c 'echo "Wants=network-online.target" >> /etc/systemd/system/first-boot-phase2.service'
+    - curtin in-target --target=/target -- bash -c 'echo "ConditionPathExists=!/var/lib/phase2-complete" >> /etc/systemd/system/first-boot-phase2.service'
+    - curtin in-target --target=/target -- bash -c 'echo "" >> /etc/systemd/system/first-boot-phase2.service'
+    - curtin in-target --target=/target -- bash -c 'echo "[Service]" >> /etc/systemd/system/first-boot-phase2.service'
+    - curtin in-target --target=/target -- bash -c 'echo "Type=oneshot" >> /etc/systemd/system/first-boot-phase2.service'
+    - curtin in-target --target=/target -- bash -c 'echo "ExecStart=/usr/local/bin/first-boot-phase2.sh" >> /etc/systemd/system/first-boot-phase2.service'
+    - curtin in-target --target=/target -- bash -c 'echo "TimeoutStartSec=3600" >> /etc/systemd/system/first-boot-phase2.service'
+    - curtin in-target --target=/target -- bash -c 'echo "" >> /etc/systemd/system/first-boot-phase2.service'
+    - curtin in-target --target=/target -- bash -c 'echo "[Install]" >> /etc/systemd/system/first-boot-phase2.service'
+    - curtin in-target --target=/target -- bash -c 'echo "WantedBy=multi-user.target" >> /etc/systemd/system/first-boot-phase2.service'
+    - curtin in-target --target=/target -- systemctl enable first-boot-phase2.service
+    
+    # ===== 11. K8S INIT SCRIPT =====
+    - curtin in-target --target=/target -- bash -c 'echo "#!/bin/bash" > /usr/local/bin/k8s-init-single-node.sh'
+    - curtin in-target --target=/target -- bash -c 'echo "set -e" >> /usr/local/bin/k8s-init-single-node.sh'
+    - curtin in-target --target=/target -- bash -c 'echo "echo === Initializing Single-Node Kubernetes ===" >> /usr/local/bin/k8s-init-single-node.sh'
+    - curtin in-target --target=/target -- bash -c 'echo "[ -f /etc/kubernetes/admin.conf ] && echo Already initialized && exit 1" >> /usr/local/bin/k8s-init-single-node.sh'
+    - curtin in-target --target=/target -- bash -c 'echo "sudo kubeadm init --pod-network-cidr=10.244.0.0/16" >> /usr/local/bin/k8s-init-single-node.sh'
+    - curtin in-target --target=/target -- bash -c 'echo "mkdir -p \\$HOME/.kube" >> /usr/local/bin/k8s-init-single-node.sh'
+    - curtin in-target --target=/target -- bash -c 'echo "sudo cp -i /etc/kubernetes/admin.conf \\$HOME/.kube/config" >> /usr/local/bin/k8s-init-single-node.sh'
+    - curtin in-target --target=/target -- bash -c 'echo "sudo chown \\$(id -u):\\$(id -g) \\$HOME/.kube/config" >> /usr/local/bin/k8s-init-single-node.sh'
+    - curtin in-target --target=/target -- bash -c 'echo "kubectl taint nodes --all node-role.kubernetes.io/control-plane- || true" >> /usr/local/bin/k8s-init-single-node.sh'
+    - curtin in-target --target=/target -- bash -c 'echo "kubectl apply -f https://github.com/flannel-io/flannel/releases/latest/download/kube-flannel.yml" >> /usr/local/bin/k8s-init-single-node.sh'
+    - curtin in-target --target=/target -- bash -c 'echo "echo === Kubernetes Ready! ===" >> /usr/local/bin/k8s-init-single-node.sh'
+    - curtin in-target --target=/target -- chmod +x /usr/local/bin/k8s-init-single-node.sh
