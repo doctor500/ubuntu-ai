@@ -66,6 +66,7 @@ autoinstall:
     - curl
     - ca-certificates
     - build-essential
+    - pigz
     
     # Shell
     - zsh
@@ -163,5 +164,7 @@ autoinstall:
     - curtin in-target --target=/target -- bash -c 'echo "sudo chown \\$(id -u):\\$(id -g) \\$HOME/.kube/config" >> /usr/local/bin/k8s-init-single-node.sh'
     - curtin in-target --target=/target -- bash -c 'echo "kubectl taint nodes --all node-role.kubernetes.io/control-plane- || true" >> /usr/local/bin/k8s-init-single-node.sh'
     - curtin in-target --target=/target -- bash -c 'echo "kubectl apply -f https://github.com/flannel-io/flannel/releases/latest/download/kube-flannel.yml" >> /usr/local/bin/k8s-init-single-node.sh'
+    - curtin in-target --target=/target -- bash -c 'echo "kubectl apply -f https://raw.githubusercontent.com/rancher/local-path-provisioner/v0.0.30/deploy/local-path-storage.yaml" >> /usr/local/bin/k8s-init-single-node.sh'
+    - curtin in-target --target=/target -- bash -c 'echo "kubectl patch storageclass local-path -p '\''{\"metadata\": {\"annotations\":{\"storageclass.kubernetes.io/is-default-class\":\"true\"}}}'\''" >> /usr/local/bin/k8s-init-single-node.sh'
     - curtin in-target --target=/target -- bash -c 'echo "echo === Kubernetes Ready! ===" >> /usr/local/bin/k8s-init-single-node.sh'
     - curtin in-target --target=/target -- chmod +x /usr/local/bin/k8s-init-single-node.sh

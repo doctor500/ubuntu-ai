@@ -47,21 +47,23 @@ If ping fails:
 
 ### Run state inspection command
 ```bash
-ssh {{vm_username}}@{{vm_ip}} "hostname && cat /etc/os-release && locale && dpkg -l | grep -E 'ubuntu-desktop-minimal|git|docker-ce|neofetch|net-tools' && systemctl is-enabled ssh"
+ssh {{vm_username}}@{{vm_ip}} "hostname && cat /etc/os-release && locale && dpkg -l | grep -E 'ubuntu-desktop-minimal|git|docker-ce|neofetch|net-tools|pigz' && systemctl is-enabled ssh && kubectl get sc"
 ```
 
 This command retrieves:
 - Current hostname
 - OS release information
 - Locale settings
-- Installed packages (matching autoinstall.yaml)
+- Installed packages (matching autoinstall.yaml + pigz)
 - SSH service status
+- Storage Class status
 
 **Expected output:**
 - Hostname matching `{{vm_hostname}}`
 - OS information (Ubuntu version)
 - Installed packages listed with version numbers
 - `enabled` for SSH service
+- `local-path` StorageClass listed as default
 
 ## 5. Compare Against Configuration
 
@@ -77,7 +79,9 @@ Compare the SSH output with `context/autoinstall.yaml`:
 | **Docker CE** | `ii docker-ce ...` | `packages` list | ✓/✗ |
 | **Neofetch** | `ii neofetch ...` | `packages` list | ✓/✗ |
 | **Net-tools** | `ii net-tools ...` | `packages` list | ✓/✗ |
+| **Pigz** | `ii pigz ...` | `packages` list | ✓/✗ |
 | **SSH** | `enabled` | `ssh: install-server: true` | ✓/✗ |
+| **Storage** | `local-path (default)` | `k8s-init-single-node.sh` | ✓/✗ |
 
 ### Automated Comparison (Optional)
 

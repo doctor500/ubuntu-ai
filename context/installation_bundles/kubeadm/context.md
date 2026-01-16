@@ -43,6 +43,8 @@ See common_patterns.md#standard-prerequisites
 2. **Install packages:** Add K8s repo, install kubelet/kubeadm/kubectl, hold versions
 3. **Install nerdctl:** Download from GitHub releases
 4. **Initialize cluster:** kubeadm init, configure kubectl, untaint, install Flannel
+5. **Install Storage:** Deploy Rancher Local Path Provisioner
+6. **Configure Storage:** Patch local-path as default StorageClass
 
 ## Related Files
 - `autoinstall.yaml` - Packages and late-commands

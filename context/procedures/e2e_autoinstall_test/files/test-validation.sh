@@ -58,6 +58,7 @@ EXPECTED_PACKAGES=(
     "git"
     "neofetch"
     "net-tools"
+    "pigz"
 )
 
 for pkg in "${EXPECTED_PACKAGES[@]}"; do

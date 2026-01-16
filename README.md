@@ -130,6 +130,7 @@ dpkg -l ubuntu-desktop-minimal
 
 # Check Kubernetes
 kubectl get nodes
+kubectl get sc
 
 # Check shell tools
 brew --version
