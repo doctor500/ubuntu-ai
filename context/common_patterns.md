@@ -1,6 +1,9 @@
 # Common Patterns Reference
 
-Quick reference for shared patterns, prerequisites, and troubleshooting.
+Quick reference for shared patterns, prerequisites, and operating modes.
+
+> **⚠️ GOVERNANCE:** All AI Agents must follow modes defined in `context/governance.md`.
+> **Default:** Approval Mode (Plan → Confirm → Execute).
 
 ---
 

@@ -10,6 +10,14 @@ This repository manages automated Ubuntu Desktop installation using Canonical's 
 | **Kubernetes** | kubeadm, kubelet, kubectl v1.31, containerd |
 | **Shell Tools** | Homebrew, Oh My Zsh, K9s |
 | **Security** | Passwordless sudo, SSH password auth |
+| **Governance** | Strict AI interaction modes (Approval vs Auto Pilot) |
+
+## 🤖 AI Agent Governance
+
+This project adheres to strict interaction protocols defined in `context/governance.md`.
+
+- **Default:** **Approval Mode** (Plan first, ask before executing).
+- **Auto Pilot:** Available on request (Recommended or Aggressive profiles).
 
 ## 2-Phase Installation Approach
 
