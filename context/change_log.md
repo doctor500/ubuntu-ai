@@ -16,6 +16,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Reorganized `common_patterns.md` procedure categories (Init/Config/VM/Security/Maintenance)
 - Updated README.md with complete procedure list (13 procedures, 4 bundles)
 
+### Applied (VM System Update - 2026-01-20)
+- See `context/vm_update_log.md` for detailed package updates (3 packages updated)
+
 ## [0.4.3] - 2026-01-16
 
 ### Fixed (Critical Infrastructure)
@@ -30,18 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.4.2] - 2026-01-16
 
 ### Applied (VM System Update)
-- **APT Packages Updated** (13 packages):
-  - `alsa-ucm-conf` 1.2.10-1ubuntu5.7 → 5.8
-  - `gir1.2-mutter-14`, `libmutter-14-0`, `mutter-common`, `mutter-common-bin` → 46.2-1ubuntu0.24.04.14
-  - `network-manager`, `libnm0`, `gir1.2-nm-1.0`, `network-manager-config-connectivity-ubuntu` → 1.46.0-1ubuntu2.5
-  - `gnome-remote-desktop` → 46.3-0ubuntu1.2
-  - `snapd` 2.72 → 2.73
-  - `thermald` → 2.5.6-2ubuntu0.24.04.3
-  - `libpng16-16t64` → 1.6.43-5ubuntu0.3
-- **Homebrew Packages Updated**:
-  - `k9s` 0.50.16 → 0.50.18
-- **Cleaned Up** (3 unused packages removed):
-  - `libllvm19`, `pigz`, `slirp4netns` (129MB freed)
+- See `context/vm_update_log.md` for detailed package updates (13 packages updated)
 
 ### Notes
 - GDM packages (gdm3, gir1.2-gdm-1.0, libgdm1) deferred due to Ubuntu phasing

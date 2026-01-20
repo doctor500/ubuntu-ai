@@ -20,7 +20,7 @@ See common_patterns.md#standard-prerequisites
 3. **Format:** Keep a Changelog v1.1.0 structure
 
 ## Related Files
-- `change_log.md` - Target file (gitignored)
+- `change_log.md` - Target file (git tracked)
 
 ## AI Agent Notes
 

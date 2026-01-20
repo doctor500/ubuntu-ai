@@ -121,24 +121,27 @@ ssh {{USER}}@{{IP}} 'apt list --upgradable 2>/dev/null | wc -l'
 ssh {{USER}}@{{IP}} '[ -f /var/run/reboot-required ] && cat /var/run/reboot-required || echo "No reboot required"'
 ```
 
-### 4.3 Update Changelog
-Add entry to `context/change_log.md`:
+### 4.3 Update Update Log
+Add entry to `context/vm_update_log.md`:
 
 ```markdown
-## [X.X.X] - YYYY-MM-DD
+## YYYY-MM-DD
 
-### Applied (VM System Update)
-- **APT Packages Updated** (N packages):
-  - `package-name` X.X.X → Y.Y.Y
-- **Homebrew Packages Updated**:
-  - `tool-name` X.X.X → Y.Y.Y
-- **Cleaned Up** (N unused packages removed):
-  - `package-name` (XX MB freed)
+### APT Packages Updated (N packages)
+- `package-name` X.X.X → Y.Y.Y
+
+### Homebrew Packages Updated
+- `tool-name` X.X.X → Y.Y.Y
+
+### Cleaned Up (N unused packages removed)
+- `package-name` (XX MB freed)
 
 ### Notes
 - Held packages: kubelet, kubeadm, kubectl (v1.31.X)
 - Reboot required: [yes/no]
 ```
+
+**Note:** Only update `context/change_log.md` if you also made structural changes to the project (e.g., modified autoinstall.yaml templates).
 
 ---
 

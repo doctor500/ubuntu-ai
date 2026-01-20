@@ -23,11 +23,14 @@ See common_patterns.md#standard-prerequisites
 3. **Report:** Show update summary, ask for approval
 4. **Execute:** Apply approved updates
 5. **Verify:** Confirm updated versions
-6. **Track:** Update change_log.md with version changes
+6. **Track:**
+   - Update `vm_update_log.md` (for package/service updates)
+   - Update `change_log.md` (only if project structure changed)
 
 ## Related Files
 - `user_data.json` - VM connection details
-- `change_log.md` - Version history
+- `vm_update_log.md` - Package update log (gitignored)
+- `change_log.md` - Project changelog (git tracked)
 - `installation_bundles/*/procedure.md` - Version check commands
 
 ## AI Agent Notes
@@ -47,7 +50,8 @@ See common_patterns.md#standard-prerequisites
 **Specific:**
 - Kubernetes packages are held (kubelet, kubeadm, kubectl) — skip unless explicit
 - Homebrew updates run as user, APT as sudo
-- Record both old → new versions in changelog
+- Record package updates in `vm_update_log.md` (gitignored)
+- Record project structure changes in `change_log.md` (tracked)
 - Reboot required: kernel, systemd, glibc updates
 
 ## Update Scopes

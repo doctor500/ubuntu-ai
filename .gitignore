@@ -7,3 +7,4 @@ context/autoinstall.yaml
 __pycache__/
 *.pyc
 .DS_Store
+context/vm_update_log.md
