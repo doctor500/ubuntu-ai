@@ -44,21 +44,32 @@ This project uses a **2-phase approach** for reliable desktop installation:
 | `context/autoinstall.yaml` | Your personalized config (gitignored) |
 | `context/user_data.json` | VM connection info (gitignored) |
 
-### Procedures
+### Procedures (13)
 
 | Procedure | Description |
 |-----------|-------------|
+| `add_late_command/` | Add late-command scripts to autoinstall.yaml |
 | `e2e_autoinstall_test/` | End-to-end testing with Packer/QEMU |
-| `verify_vm/` | Verify live VM matches configuration |
+| `exclude_bundles/` | Generate variant configs by excluding bundles |
+| `init_autoinstall/` | Initialize autoinstall.yaml from template |
+| `init_change_log/` | Initialize changelog with Keep a Changelog format |
+| `init_user_data/` | Initialize user_data.json with VM connection details |
+| `maintain_docs/` | Keep README synchronized with project structure |
+| `passwordless_sudo/` | Configure passwordless sudo access |
+| `ssh_key_auth/` | Set up SSH key authentication |
+| `update_system/` | Update system packages and bundles with tracking |
 | `validate_config/` | Validate autoinstall.yaml syntax |
+| `verify_script/` | Security analysis before script execution |
+| `verify_vm/` | Compare live VM state with configuration |
 
-### Installation Bundles
+### Installation Bundles (4)
 
 | Bundle | Components |
 |--------|------------|
-| `kubeadm/` | Kubernetes (integrated into main config) |
-| `shell_tools/` | Homebrew, Oh My Zsh, K9s (integrated) |
-| `packer_qemu/` | E2E testing infrastructure |
+| `docker/` | Docker CE (historical reference) |
+| `kubeadm/` | Kubernetes v1.31, containerd, nerdctl |
+| `packer_qemu/` | Packer + QEMU for E2E testing |
+| `shell_tools/` | Homebrew, Oh My Zsh, K9s |
 
 ## Quick Start
 

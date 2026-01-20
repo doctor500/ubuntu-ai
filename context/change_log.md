@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Created `update_system` procedure for package and bundle updates with version tracking
+  - Supports APT, Homebrew, and bundle-specific updates
+  - Integrates with changelog for version history
+
+### Changed
+- Reorganized `common_patterns.md` procedure categories (Init/Config/VM/Security/Maintenance)
+- Updated README.md with complete procedure list (13 procedures, 4 bundles)
+
 ## [0.4.3] - 2026-01-16
 
 ### Fixed (Critical Infrastructure)

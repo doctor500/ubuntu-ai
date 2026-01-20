@@ -69,10 +69,16 @@ python3 -c "import yaml; yaml.safe_load(open('context/autoinstall.yaml'))"
 
 ## Procedure Quick Reference
 
-### Configuration
+### Initialization
 | Need | Procedure |
 |------|-----------|
 | Initialize config | `init_autoinstall` |
+| Initialize changelog | `init_change_log` |
+| Initialize VM data | `init_user_data` |
+
+### Configuration
+| Need | Procedure |
+|------|-----------|
 | Validate config | `validate_config` |
 | Add late-command | `add_late_command` |
 | Exclude bundles | `exclude_bundles` |
@@ -80,15 +86,21 @@ python3 -c "import yaml; yaml.safe_load(open('context/autoinstall.yaml'))"
 ### VM Operations
 | Need | Procedure |
 |------|-----------|
-| Setup VM connection | `init_user_data` |
 | Verify VM state | `verify_vm` |
 | Setup SSH keys | `ssh_key_auth` |
+| Setup passwordless sudo | `passwordless_sudo` |
+| Update packages/bundles | `update_system` |
 | E2E test | `e2e_autoinstall_test` |
 
 ### Security
 | Need | Procedure |
 |------|-----------|
 | Execute script | `verify_script` (ALWAYS) |
+
+### Maintenance
+| Need | Procedure |
+|------|-----------|
+| Sync documentation | `maintain_docs` |
 
 ---
 

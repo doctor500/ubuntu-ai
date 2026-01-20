@@ -42,3 +42,42 @@ When a user requests an installation that matches an existing bundle:
     - If outdated, update `procedure.md` first.
 4.  **Execute:** Run the steps defined in `procedure.md`.
 5.  **Update Config:** If the bundle installs system packages that should be permanent, update `context/autoinstall.yaml` and `context/change_log.md`.
+
+---
+
+## Current Versions
+
+| Component | Version | Bundle | Last Updated |
+|-----------|---------|--------|--------------|
+| Kubernetes | v1.31.14 | kubeadm | 2026-01-07 |
+| containerd | Latest | kubeadm | 2026-01-07 |
+| nerdctl | v2.2.1 | kubeadm | 2026-01-07 |
+| Homebrew | Latest | shell_tools | Dynamic |
+| Oh My Zsh | Latest | shell_tools | Dynamic |
+| K9s | v0.50.18 | shell_tools | 2026-01-16 |
+| Packer | Latest | packer_qemu | Dynamic |
+| QEMU | System | packer_qemu | Dynamic |
+
+**Note:** "Latest" = installed via package manager, auto-updated. "Dynamic" = version determined at install time.
+
+---
+
+## Procedure Dependencies
+
+```
+init_autoinstall ─────┬──→ validate_config ──→ e2e_autoinstall_test
+                      │
+init_user_data ───────┼──→ verify_vm
+                      │
+                      └──→ update_system
+
+add_late_command ──→ verify_script ──→ validate_config
+```
+
+| Procedure | Requires First |
+|-----------|----------------|
+| `e2e_autoinstall_test` | `validate_config` |
+| `add_late_command` | `verify_script` |
+| `verify_vm` | `init_user_data` |
+| `update_system` | `init_user_data` |
+
