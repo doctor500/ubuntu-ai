@@ -11,10 +11,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Created `update_system` procedure for package and bundle updates with version tracking
   - Supports APT, Homebrew, and bundle-specific updates
   - Integrates with changelog for version history
+- Created `reboot_vm` procedure for graceful single-node k8s VM reboot
+  - Cordon -> reboot -> verify (6 gates) -> uncordon
+  - Documents the 2026-08-11 cordon-left-behind failure mode
 
 ### Changed
 - Reorganized `common_patterns.md` procedure categories (Init/Config/VM/Security/Maintenance)
-- Updated README.md with complete procedure list (13 procedures, 4 bundles)
+- Updated README.md with complete procedure list (14 procedures, 4 bundles)
 
 ### Applied (VM System Update - 2026-08-11)
 - **111 APT packages** upgraded (systemd, GDM, GNOME, containerd, QEMU, packer, +59 libs)

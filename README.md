@@ -52,7 +52,7 @@ This project uses a **2-phase approach** for reliable desktop installation:
 | `context/autoinstall.yaml` | Your personalized config (gitignored) |
 | `context/user_data.json` | VM connection info (gitignored) |
 
-### Procedures (13)
+### Procedures (14)
 
 | Procedure | Description |
 |-----------|-------------|
@@ -65,6 +65,7 @@ This project uses a **2-phase approach** for reliable desktop installation:
 | `maintain_docs/` | Keep README synchronized with project structure |
 | `passwordless_sudo/` | Configure passwordless sudo access |
 | `ssh_key_auth/` | Set up SSH key authentication |
+| `reboot_vm/` | Gracefully reboot single-node k8s VM (cordon/verify/uncordon) |
 | `update_system/` | Update system packages and bundles with tracking |
 | `validate_config/` | Validate autoinstall.yaml syntax |
 | `verify_script/` | Security analysis before script execution |
