@@ -16,6 +16,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Reorganized `common_patterns.md` procedure categories (Init/Config/VM/Security/Maintenance)
 - Updated README.md with complete procedure list (13 procedures, 4 bundles)
 
+### Applied (VM System Update - 2026-08-11)
+- **111 APT packages** upgraded (systemd, GDM, GNOME, containerd, QEMU, packer, +59 libs)
+- **k9s** 0.50.18 → 0.51.0 (Homebrew)
+- **Reboot** to kernel 7.0.0-28 (from 6.17.0-35); node cordoned, graceful reboot
+- **Post-reboot verification** (per k8s-selfhosted KB): all 7 ArgoCD apps Healthy, in-cluster VIP OK, no stale iptables, kube-proxy confirmed at 10.253.11.2
+- See `context/vm_update_log.md` for full package details
+
 ### Applied (VM System Update - 2026-01-20)
 - See `context/vm_update_log.md` for detailed package updates (3 packages updated)
 
