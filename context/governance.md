@@ -1,6 +1,47 @@
+# Project Context Gate (MANDATORY)
+
+**Status:** ACTIVE — approved 2026-08-12. Applies to ALL agents working in this repo.
+
+> **Before any plan or action — read context. After any state change — write context. Never plan from memory.**
+
+## Gate: BEFORE (any plan, any action, any delegation)
+
+1. Load workspace context (agent description / KB) — automatic.
+2. Read repo context in deterministic order:
+   - `context/governance.md` (this file)
+   - `context/change_log.md` (tail — last 30 lines for recent changes)
+   - `context/vm_update_log.md` (tail — last 30 lines for recent updates)
+   - Relevant procedure file (in `context/procedures/<name>/procedure.md`)
+3. Read the channel KB decisions entry (`@knowledge:decisions-for-channel-channel-24f1e8ba`).
+4. Read channel history (last 20 messages) for pending items.
+5. Reply with: **"Context checked: [files read · last-known state · pending items]"**.
+
+**Flag missing files — do not assume.**
+
+## Gate: AFTER (any state-changing action)
+
+1. Update the owning repo context file in the SAME session (`vm_update_log.md` / `change_log.md` / relevant procedure) + commit.
+2. Cross-project decisions → update the channel KB decisions entry (or hand off to the curator).
+3. Reply with: **"Context updated: [files changed · commit · links]"**.
+
+---
+
+## Read-order summary
+
+```
+context/governance.md  (this file — protocols + gate)
+  → change_log.md      (tail — project structural changes)
+    → vm_update_log.md (tail — package/bundle update history)
+      → procedures/<name>/procedure.md  (relevant to the task)
+```
+
+Refer to `@knowledge:project-context-gate-protocol` for the authoritative protocol definition.
+
+---
+
 # AI Agent Governance & Interaction Modes
 
-This document defines the operating protocols for AI Agents interacting with this project. AI Agents **MUST** adhere to these modes to ensure deep requirement understanding change safety.
+This document defines the operating protocols for AI Agents interacting with this project. AI Agents **MUST** adhere to these modes to ensure deep requirement understanding and change safety.
 
 ---
 

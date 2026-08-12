@@ -143,6 +143,27 @@ Add entry to `context/vm_update_log.md`:
 
 **Note:** Only update `context/change_log.md` if you also made structural changes to the project (e.g., modified autoinstall.yaml templates).
 
+### 4.4 Cross-Check with KB Decisions
+
+After every update, cross-reference the changes against the channel KB:
+
+1. **Read the channel decisions entry:**
+   ```
+   @knowledge:decisions-for-channel-channel-24f1e8ba
+   ```
+
+2. **Flag KB-worthy changes.** A change is KB-worthy if it:
+   - Modified any K8s infrastructure package (cri-tools, kubernetes-cni, containerd)
+   - Changed held package state (new holds or unholds)
+   - Altered the outcome of a previously logged decision
+   - Requires a new decision (e.g., version jump across minor boundaries)
+
+3. **Update the decisions entry** if anything changed — append an outcome bullet to the relevant decision, or create a new decision section.
+
+4. **Cross-check `change_log.md` vs KB:** if `change_log.md` was updated this run, verify any structural change that could affect other agents appears in the KB decisions entry.
+
+5. Reply with: **"KB cross-check: [changes flagged / none · decisions entry updated / unchanged]"**.
+
 ---
 
 ## Bundle-Specific Updates
