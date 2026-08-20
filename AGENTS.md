@@ -31,6 +31,7 @@ context/governance.md          ← gate + protocols (START HERE)
 
 | Path | Purpose |
 |------|---------|
+| `.agents/` | Standard project context (router README, PROJECT, ARCHITECTURE, CONVENTIONS, DECISIONS, memory) — see `.agents/README.md` |
 | `context/governance.md` | Interaction modes + context gate |
 | `context/change_log.md` | Project structural changes (tracked) |
 | `context/vm_update_log.md` | Package/bundle update history (gitignored) |
