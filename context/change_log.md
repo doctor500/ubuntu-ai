@@ -19,6 +19,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Reorganized `common_patterns.md` procedure categories (Init/Config/VM/Security/Maintenance)
 - Updated README.md with complete procedure list (14 procedures, 4 bundles)
 
+### Applied (VM System Update - 2026-09-02)
+- **25 routine APT packages** upgraded (snapd, python3.12, krb5, ncurses, libgcrypt20, console-setup, etc.)
+- **containerd.io** 2.3.3 → 2.3.4 (runtime; node cordoned + drained first)
+- **Reboot** to kernel 7.0.0-30; node cordoned, drained, graceful reboot, uncordoned
+- **Post-reboot verification**: node Ready, 0 non-compliant pods, ArgoCD 7/7 Synced+Healthy, flannel Running, containerd v2.3.4
+- **K8s trio held** at v1.35.7 (1.35.8 deferred — separate kubeadm runbook, scope pending David)
+- See `context/vm_update_log.md` for full package details
+
 ### Applied (VM System Update - 2026-08-11)
 - **111 APT packages** upgraded (systemd, GDM, GNOME, containerd, QEMU, packer, +59 libs)
 - **k9s** 0.50.18 → 0.51.0 (Homebrew)
