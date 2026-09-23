@@ -19,6 +19,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Reorganized `common_patterns.md` procedure categories (Init/Config/VM/Security/Maintenance)
 - Updated README.md with complete procedure list (14 procedures, 4 bundles)
 
+### Applied (VM System Update - 2026-09-24)
+- **6 APT packages** upgraded: kernel HWE 7.0.0-31 → 7.0.0-34 (3 pkg), linux-libc-dev + linux-tools-common 6.8.0-139 → 6.8.0-142, sudo security
+- **Reboot** to kernel 7.0.0-34 (from 7.0.0-31); node cordoned, graceful reboot, uncordoned
+- **Post-reboot verification**: node Ready v1.35.8, 0 non-compliant pods, ArgoCD 8/8 Synced+Healthy (incl. 9router), flannel Running
+- **Holds** unchanged: kubelet/kubeadm/kubectl v1.35.8
+- **Scope note**: package update only — the 24.04→26.04 OS upgrade remains gated (meta-release-lts `Supported: 0`)
+- See `context/vm_update_log.md` for full package details
+
 ### Applied (VM System Update - 2026-09-11)
 - **containerd.io** 2.3.4-2 → 2.3.5-1 (runtime; node cordoned first)
 - **~29 routine/security APT packages** upgraded (libc6 family, python3.12, wireless-regdb, linux-firmware split, base-files, language-packs, etc.)
