@@ -19,6 +19,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Reorganized `common_patterns.md` procedure categories (Init/Config/VM/Security/Maintenance)
 - Updated README.md with complete procedure list (14 procedures, 4 bundles)
 
+### Applied (VM System Update - 2026-09-26)
+- **containerd.io** 2.3.5-1 → 2.3.6-1 (runtime; node cordoned first, no drain)
+- **18 routine/security APT packages** (curl family, apparmor, expat, pcap, audit, xserver, gnome-shell, linux-firmware-amd-graphics; 9 phased forced per convention)
+- Post-update verification: node Ready v1.35.8, 0 non-compliant pods, ArgoCD 8/8 Synced+Healthy, flannel Running
+- Holds unchanged: kubelet/kubeadm/kubectl v1.35.8 (candidate 1.35.9 deferred — Plan C)
+- Reboot flag set by gnome-shell only (session restart suffices; deferred)
+- See `context/vm_update_log.md` for full package details
+
 ### Applied (VM System Update - 2026-09-24)
 - **6 APT packages** upgraded: kernel HWE 7.0.0-31 → 7.0.0-34 (3 pkg), linux-libc-dev + linux-tools-common 6.8.0-139 → 6.8.0-142, sudo security
 - **Reboot** to kernel 7.0.0-34 (from 7.0.0-31); node cordoned, graceful reboot, uncordoned
