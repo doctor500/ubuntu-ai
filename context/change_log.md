@@ -27,6 +27,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Reboot flag set by gnome-shell only (session restart suffices; deferred)
 - See `context/vm_update_log.md` for full package details
 
+### Applied (K8s Patch Upgrade - 2026-09-26)
+- **K8s trio** kubelet/kubeadm/kubectl 1.35.8 → 1.35.9 (kubeadm patch flow; executed by k8s-selfhosted, k8s repo commit `4fa2a92`)
+- Graceful cluster down (stop kubelet → stop containerd) + VM restart + auto-up; cleared pending gnome-shell session flag
+- Holds re-applied at v1.35.9; independently verified 09-27: node Ready v1.35.9, 0 non-compliant pods, ArgoCD 8/8 Synced+Healthy
+- See `context/vm_update_log.md`
+
 ### Applied (VM System Update - 2026-09-24)
 - **6 APT packages** upgraded: kernel HWE 7.0.0-31 → 7.0.0-34 (3 pkg), linux-libc-dev + linux-tools-common 6.8.0-139 → 6.8.0-142, sudo security
 - **Reboot** to kernel 7.0.0-34 (from 7.0.0-31); node cordoned, graceful reboot, uncordoned
