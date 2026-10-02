@@ -274,3 +274,14 @@ changes go in `change_log.md`.
 - **Applier**: Ubuntu `unattended-upgrades` (auto security-only), 2026-09-30 06:40:33-40 UTC — ran after the scan, before David's approval. Manual `apt upgrade -y` on approval was a no-op (0 upgraded).
 - **Post-check (ubuntu-desktop)**: dpkg confirms all 6 at target versions, apt 0 upgradable, holds intact (trio v1.35.9), no reboot flag, node Ready v1.35.9, 0 non-running pods.
 - **Implication**: unattended-upgrades may auto-apply security-only batches before approval lands — future scan reports may show security items already resolved same-day.
+
+---
+
+## 2026-10-02
+
+### 15 non-kernel packages applied (Option B — kernel deferred)
+- **Approval**: David chose Option B from 10-02 scan (18 upgradable) — apply 15, defer kernel HWE metas.
+- **Applied by ubuntu-desktop** via `apt install -y --only-upgrade <15 pkgs>`: mesa family (8) 25.2.8-...2→.3, thermald ...5→.6, linux-libc-dev + linux-tools-common 6.8.0-142.142→146.146, alsa-ucm-conf ...14→.15, gstreamer1.0-plugins-good + libgstreamer-plugins-good1.0-0 ...1.7→.8, libxpm4 ...1→.2 (last 3 were security-pocket, applied manually ahead of unattended-upgrades).
+- **Deferred**: linux-image/headers/generic-hwe-24.04 metas 7.0.0-34→**7.0.0-38** — remain upgradable, no reboot flag yet (kernel bits not installed).
+- **Post-check**: apt shows exactly the 3 kernel metas remaining; holds intact (trio v1.35.9); no-reboot-required; node Ready v1.35.9, 0 non-running pods.
+- **Next**: when kernel window chosen — apply 3 metas, then `reboot_vm` procedure (cordon → reboot → verify → uncordon, ~2-3 min downtime, precedent 09-24 HWE 7.0.0-34).
