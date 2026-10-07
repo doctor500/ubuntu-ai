@@ -285,3 +285,26 @@ changes go in `change_log.md`.
 - **Deferred**: linux-image/headers/generic-hwe-24.04 metas 7.0.0-34→**7.0.0-38** — remain upgradable, no reboot flag yet (kernel bits not installed).
 - **Post-check**: apt shows exactly the 3 kernel metas remaining; holds intact (trio v1.35.9); no-reboot-required; node Ready v1.35.9, 0 non-running pods.
 - **Next**: when kernel window chosen — apply 3 metas, then `reboot_vm` procedure (cordon → reboot → verify → uncordon, ~2-3 min downtime, precedent 09-24 HWE 7.0.0-34).
+
+---
+
+## 2026-10-08
+
+### Kernel HWE 7.0.0-34 → 7.0.0-38 + full restart-maintenance window (R0-R4)
+- **Approval**: David "lets execute the plan" (2026-10-08) — single-owner window by ubuntu-desktop, no k8s-selfhosted dependency (pure OS packages + reboot; no cluster-component change).
+- **R0 pre-gate**: node Ready v1.35.9, 0 non-compliant pods, ArgoCD 8/8 Synced+Healthy, flannel Running, holds `kubeadm`/`kubectl`/`kubelet` v1.35.9, no reboot flag. Cordoned (no drain — single node).
+- **R1 apply**: `apt-get dist-upgrade -y -o APT::Get::Always-Include-Phased-Updates=true` — 37 upgradable consumed, incl. deferred kernel HWE metas `linux-image/headers/generic-hwe-24.04` → **7.0.0-38.38~24.04.4** (initramfs regenerated, GRUB updated, 7.0.0-34/7.0.0-31 kept as rollback entries). Held trio untouched.
+- **R2 reboot**: `systemctl reboot` from 7.0.0-34-generic; single owner, node cordoned throughout.
+- **Known transients observed/expected**: RBAC Forbidden ~30 s, pods Unknown until kubelet reconciles — waited, not touched.
+- **Hashicorp apt repo**: still `NO_PUBKEY FC9CA96ACA026560` (index not fetched, old cached used) — pre-existing known item, unrelated to this window.
+
+### Cluster Health Gate (post-reboot)
+- - ✅ Node **Ready v1.35.9** (uncordoned, schedulable — SchedulingDisabled cleared), 0 non-compliant pods, ArgoCD **8/8 Synced+Healthy**, flannel Running
+- ✅ Kernel **7.0.0-38-generic** active (was 7.0.0-34-generic); Server + Client v1.35.9; `kubeadm`/`kubectl`/`kubelet` all **1.35.9-1.1** (held, untouched)
+- ✅ `apt list --upgradable` = **0 remaining**; holds `kubeadm`/`kubectl`/`kubelet` intact; no reboot flag
+- ✅ 9router pod `9router-656b4fffbd-vvllh` 1/1 Running (single restart at T+3m05s, the post-reboot restart — expected); external `https://llm.kopidalar.id/v1/models` → **401** (auth-gated response, gateway healthy)
+- **Boot evidence**: uptime at verification = `up 0 min`, uname `7.0.0-38-generic`
+
+### Notes
+- Rollback anchor: GRUB previous entry (7.0.0-34-generic) + per-package apt downgrade; trio stays held at v1.35.9.
+- Standing human item unchanged: NUC BIOS "After Power Failure" = Power On (bare metal, no hypervisor/WoL).

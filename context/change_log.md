@@ -19,6 +19,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Reorganized `common_patterns.md` procedure categories (Init/Config/VM/Security/Maintenance)
 - Updated README.md with complete procedure list (14 procedures, 4 bundles)
 
+### Applied (Restart Maintenance - 2026-10-08)
+- **37 APT packages** applied via `apt-get dist-upgrade -y -o APT::Get::Always-Include-Phased-Updates=true`, incl. deferred kernel HWE metas `linux-image/headers/generic-hwe-24.04` → **7.0.0-38.38~24.04.4**
+- **Graceful reboot** 7.0.0-34-generic → 7.0.0-38-generic (cordon → reboot → verify gate → uncordon; no drain, single node)
+- **Post-reboot verification**: node Ready v1.35.9, 0 non-compliant pods, ArgoCD 8/8 Synced+Healthy, flannel Running, 9router Running, external `llm.kopidalar.id` → 401 (gateway healthy)
+- **Holds unchanged**: kubelet/kubeadm/kubectl v1.35.9-1.1; `apt list --upgradable` = 0; no reboot flag
+- Rollback anchor: GRUB previous entry (7.0.0-34-generic) retains `linux-image-7.0.0-34-generic`
+- See `context/vm_update_log.md` for full details
+
 ### Applied (VM System Update - 2026-09-26)
 - **containerd.io** 2.3.5-1 → 2.3.6-1 (runtime; node cordoned first, no drain)
 - **18 routine/security APT packages** (curl family, apparmor, expat, pcap, audit, xserver, gnome-shell, linux-firmware-amd-graphics; 9 phased forced per convention)
