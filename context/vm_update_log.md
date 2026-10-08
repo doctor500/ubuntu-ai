@@ -290,6 +290,18 @@ changes go in `change_log.md`.
 
 ## 2026-10-08
 
+### 31-package batch + kernel 7.0.0-38 applied externally by David (deferred window taken manually)
+- **Finder**: ubuntu-desktop scans 10-02→10-07 tracked the pile (12 → 32 upgradable); kernel metas + mesa held pending window decision since 10-02 (Option B).
+- **Applier**: David directly (`Requested-By: davidlay`), 2026-10-08 00:25 local — `apt-get dist-upgrade -y` with phased-updates + force-confdef/confold (same pattern as k8s-selfhosted 09-26). All 31 applied: kernel metas 3 → **7.0.0-38** (+ tools/headers/modules installed), mesa .3→.4 (8), bluez .6 (4), mutter .18 (4), dnsmasq-base .2, security 13 (freerdp 3.32.1 ×3, libsoup ×5, librsvg ×3, libfreetype6), plus poppler family ×4 and sudo patch (pulled by dist-upgrade, not in scan list).
+- **Reboot**: 00:28 local (2 min after batch) — kernel **7.0.0-38-generic** active, flag cleared. Node Ready v1.35.9, 0 non-running pods, holds intact.
+- **unattended-upgrades 06:31**: autoremoved old kernel 7.0.0-31 bits. NOTE: 13 kernel images still installed (6.14→7.0.0-34) — cleanup candidate via `apt autoremove --purge` (keep 38 current + 34 fallback), needs approval.
+- **Remaining**: libpng16-16t64 security (.6→.7) — expected to auto-apply via unattended.
+- **LTS**: still 24.04.5 — G0 decision for 26.04 unaffected, gate open since 10-05.
+
+---
+
+## 2026-10-08
+
 ### Kernel HWE 7.0.0-34 → 7.0.0-38 + full restart-maintenance window (R0-R4)
 - **Approval**: David "lets execute the plan" (2026-10-08) — single-owner window by ubuntu-desktop, no k8s-selfhosted dependency (pure OS packages + reboot; no cluster-component change).
 - **R0 pre-gate**: node Ready v1.35.9, 0 non-compliant pods, ArgoCD 8/8 Synced+Healthy, flannel Running, holds `kubeadm`/`kubectl`/`kubelet` v1.35.9, no reboot flag. Cordoned (no drain — single node).
