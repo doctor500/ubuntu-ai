@@ -290,18 +290,6 @@ changes go in `change_log.md`.
 
 ## 2026-10-08
 
-### 31-package batch + kernel 7.0.0-38 applied externally by David (deferred window taken manually)
-- **Finder**: ubuntu-desktop scans 10-02→10-07 tracked the pile (12 → 32 upgradable); kernel metas + mesa held pending window decision since 10-02 (Option B).
-- **Applier**: David directly (`Requested-By: davidlay`), 2026-10-08 00:25 local — `apt-get dist-upgrade -y` with phased-updates + force-confdef/confold (same pattern as k8s-selfhosted 09-26). All 31 applied: kernel metas 3 → **7.0.0-38** (+ tools/headers/modules installed), mesa .3→.4 (8), bluez .6 (4), mutter .18 (4), dnsmasq-base .2, security 13 (freerdp 3.32.1 ×3, libsoup ×5, librsvg ×3, libfreetype6), plus poppler family ×4 and sudo patch (pulled by dist-upgrade, not in scan list).
-- **Reboot**: 00:28 local (2 min after batch) — kernel **7.0.0-38-generic** active, flag cleared. Node Ready v1.35.9, 0 non-running pods, holds intact.
-- **unattended-upgrades 06:31**: autoremoved old kernel 7.0.0-31 bits. NOTE: 13 kernel images still installed (6.14→7.0.0-34) — cleanup candidate via `apt autoremove --purge` (keep 38 current + 34 fallback), needs approval.
-- **Remaining**: libpng16-16t64 security (.6→.7) — expected to auto-apply via unattended.
-- **LTS**: still 24.04.5 — G0 decision for 26.04 unaffected, gate open since 10-05.
-
----
-
-## 2026-10-08
-
 ### Kernel HWE 7.0.0-34 → 7.0.0-38 + full restart-maintenance window (R0-R4)
 - **Approval**: David "lets execute the plan" (2026-10-08) — single-owner window by ubuntu-desktop, no k8s-selfhosted dependency (pure OS packages + reboot; no cluster-component change).
 - **R0 pre-gate**: node Ready v1.35.9, 0 non-compliant pods, ArgoCD 8/8 Synced+Healthy, flannel Running, holds `kubeadm`/`kubectl`/`kubelet` v1.35.9, no reboot flag. Cordoned (no drain — single node).
@@ -311,7 +299,7 @@ changes go in `change_log.md`.
 - **Hashicorp apt repo**: still `NO_PUBKEY FC9CA96ACA026560` (index not fetched, old cached used) — pre-existing known item, unrelated to this window.
 
 ### Cluster Health Gate (post-reboot)
-- - ✅ Node **Ready v1.35.9** (uncordoned, schedulable — SchedulingDisabled cleared), 0 non-compliant pods, ArgoCD **8/8 Synced+Healthy**, flannel Running
+- ✅ Node **Ready v1.35.9** (uncordoned, schedulable — SchedulingDisabled cleared), 0 non-compliant pods, ArgoCD **8/8 Synced+Healthy**, flannel Running
 - ✅ Kernel **7.0.0-38-generic** active (was 7.0.0-34-generic); Server + Client v1.35.9; `kubeadm`/`kubectl`/`kubelet` all **1.35.9-1.1** (held, untouched)
 - ✅ `apt list --upgradable` = **0 remaining**; holds `kubeadm`/`kubectl`/`kubelet` intact; no reboot flag
 - ✅ 9router pod `9router-656b4fffbd-vvllh` 1/1 Running (single restart at T+3m05s, the post-reboot restart — expected); external `https://llm.kopidalar.id/v1/models` → **401** (auth-gated response, gateway healthy)
@@ -320,3 +308,11 @@ changes go in `change_log.md`.
 ### Notes
 - Rollback anchor: GRUB previous entry (7.0.0-34-generic) + per-package apt downgrade; trio stays held at v1.35.9.
 - Standing human item unchanged: NUC BIOS "After Power Failure" = Power On (bare metal, no hypervisor/WoL).
+
+### Attribution correction — commit 1ab2858 superseded (2026-10-09)
+- Commit `1ab2858` (post-daemon-restart session, 10-08 16:32 JST) recorded this window as "31 pkgs applied externally by David (deferred window taken manually)". Wrong on attribution and count; this section + `c3ed3ca` are authoritative.
+- **Attribution**: apt history shows `Requested-By: davidlay (1000)` for the 00:25:29 local run — that is the invoking account, i.e. the agent's own SSH session under passwordless sudo, not a manual run by David. David's role was approval only ("lets execute the plan").
+- **Count**: the 00:25:29 `Upgrade:` line carries **37 packages** (74 comma-splits = 2×37: separators + internal version commas) — matches the 37-upgradable pre-gate count in R1. "31" was a miscount.
+- **Single event**: exactly one upgrade run + one reboot in apt history (`uptime -s` 2026-10-08 00:28:03). No second batch existed.
+- Verified facts folded in from that commit (re-checked 10-09): unattended-upgrades 06:31 local autoremoved 7.0.0-31 bits; **4 kernel images remain** (`linux-image` 7.0.0-38 current, 7.0.0-34 fallback, 6.17.0-40, 6.14.0-37 — the earlier "13 images" figure counted headers/modules too); libpng16-16t64 .6→.7 auto-applied by unattended as predicted.
+- New pile since the window (10-09 check, 8 upgradable): containerd.io, libarchive13t64, libde265-0, libldb2, libsmbclient0, libwbclient0, libxml2, samba-libs — next routine scan item; containerd.io apply follows the cordon-first convention when approved.
