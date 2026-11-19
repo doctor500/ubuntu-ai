@@ -334,3 +334,29 @@ Agent performed a read-only verification after the host came back; **no packages
 - **Databases**: n8n-1, n8n-2, umami Postgres all replayed WAL (`redo done`) and reached `database system is ready to accept connections`; umami also answers `accepting connections`. No checksum/page errors.
 - **Gateway**: `https://llm.kopidalar.id/v1/models` → **401** in 0.12 s (auth-gated = tunnel and 9router healthy); cloudflared connector registered 4 edge connections at 10:32:55Z.
 - **Open items**: 64-package pile for the next approval window; `vboxdrv` still blocked by Secure Boot; SMART unavailable (`smartctl`/`nvme-cli` not installed) — consider adding `nvme-cli` to the shell_tools bundle for future post-crash disk checks.
+
+### System Update — 69 APT packages + 3 snap refreshes (same day, post-recovery window)
+Window run under cordon, approved by David ("approve both"). Includes a coordinated-but-overlapping K8s trio upgrade by k8s-selfhosted.
+
+- **Pre-gate**: node Ready v1.35.9, 0 non-compliant pods, ArgoCD 8/8 Synced+Healthy. Cordoned (`cordon`, no drain — single node). `dpkg -l` snapshot: 1753 packages.
+- **Held before run**: `containerd.io` (added this window), `kubeadm`, `kubectl`, `kubelet`.
+- **APT apply** — `apt-get dist-upgrade -y -o APT::Get::Always-Include-Phased-Updates=true -o Dpkg::Options::=--force-confdef --force-confold`, 22:29:29 → ~22:31 local. Result: **69 upgraded, 0 newly installed, 0 removed**, exit 0.
+  - Runtime/security: `apparmor` + `libapparmor1` 4.0.1-0ubuntu0.24.04.9, `cloud-init` 26.2, `snapd` 2.78, `sssd` ×9 2.9.4-1.1ubuntu6.9, `samba-libs`/`libldb2`/`libwbclient0` 4.19.5+dfsg-4ubuntu9.8, `libsqlite3-0` 3.45.1-1ubuntu2.9, `libglib2.0-*` 2.80.0-6ubuntu3.10.
+  - Desktop/GL: mesa ×5 25.2.8-0ubuntu0.24.04.5, webkit/jsc ×6 2.52.6-0ubuntu0.24.04.2, gstreamer ×4 1.24.2-1ubuntu0.2, xserver ×4 2:21.1.12-1ubuntu1.9, hplip ×5 3.23.12+dfsg0-0ubuntu5.4, fprint ×2, nma ×3, `ubuntu-pro-client` 38ubuntu0~24.04, `distro-info` 1.7ubuntu0.1, `alsa-ucm-conf` 1.2.10-1ubuntu5.16.
+  - **`containerd.io` deliberately NOT upgraded** (held at 2.3.6). Reason from k8s-selfhosted: 2.4.2 is a non-LTS line; `/etc/containerd/config.toml` uses `enable_cdi` (line 74) and `bin_dir` (lines 112, 144), both removed in 2.4.0; Docker's repo has no 2.3.7 build. Revisit when 2.3.7 publishes.
+  - dpkg emitted `Could not execute systemctl` warnings while configuring sssd units; the reboot in this same window superseded them and all units came up clean.
+- **Snap refresh**: `core24` rev 2307, `firefox` 160.0.1-1 rev 9228, `snap-store` rev 1504. `apt-get autoremove -y` → 0 removed; `apt-get clean` run.
+- **K8s trio (k8s-selfhosted, same window)**: `apt-get install --allow-change-held-packages kubeadm=1.35.10-1.1` at 22:30:50, `kubelet=1.35.10-1.1 kubectl=1.35.10-1.1` at 22:33:21; holds re-applied. `kube-apiserver` image now `v1.35.10`, node reports v1.35.10.
+  - **Overlap noted**: the trio install started while the dist-upgrade was still running and the reboot (22:32:58) landed between the kubeadm and kubelet installs. No failures resulted, but the two windows were not serialized — future runs should sequence them explicitly.
+- **Reboot**: `systemctl reboot` 22:32:58, SSH back in **65 s**.
+- **Gates (all pass)**:
+  - C1 kernel/node: `7.0.0-43-generic`, node Ready v1.35.10, containerd 2.3.6.
+  - C2 pods: 26 running, 0 not Running/Completed.
+  - C3 VIP: in-cluster `https://10.96.0.1` answered (apiserver Status JSON).
+  - C4 kube-proxy ConfigMap `server: https://10.253.11.2:6443`.
+  - C5 stale IPs: 0 hits for old `10.1.21.29` in `iptables-save`.
+  - C6 ArgoCD: 8/8 apps present; `n8n-1` Progressing and `cloudflare-ingress`/`n8n-2` Unknown at check time — k8s-selfhosted was mid-rollout in their own window, not caused by this reboot.
+  - Uncordoned (`Ready`, no SchedulingDisabled).
+- **Hashicorp apt repo repair**: keyring only had `798AEC654E5C15428C8E42EEAA16FCBCA621E701` (2023). Fetched current key and merged `D55C0D1AC78A8D8126CB631CFC9CA96ACA026560` (2026-09-09) into `/usr/share/keyrings/hashicorp-archive-keyring.gpg`; previous file saved as `hashicorp-archive-keyring.gpg.bak-20261119`. `apt-get update` for that repo now succeeds; **`packer` 1.16.0 → 1.16.2** applied from the refreshed index.
+- **Post-window state**: `apt list --upgradable` → only `containerd.io` (held). `dpkg --audit` empty, no `/var/run/reboot-required`, 4 kernel images retained (`7.0.0-43` current, `7.0.0-38` rollback, `6.17.0-40`, `6.14.0-37`). Boot errors limited to the pre-existing `vboxdrv` (Secure Boot) and Bluetooth `sap-server`. Gateway `https://llm.kopidalar.id/v1/models` → 401.
+- **Rollback anchors**: GRUB `7.0.0-38` entry, per-package apt downgrade, `containerd.io` untouched (2.3.6), `.deb` cache cleared by `apt-get clean` (re-download available from repos).

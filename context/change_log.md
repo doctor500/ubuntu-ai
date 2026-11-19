@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Applied (VM System Update - 2026-11-19)
+- **69 APT packages** applied via `apt-get dist-upgrade -y -o APT::Get::Always-Include-Phased-Updates=true` (0 installed, 0 removed): `apparmor`/`libapparmor1` 4.0.1-…9, `cloud-init` 26.2, `snapd` 2.76.3 → 2.78, glib ×4, sqlite3, `sssd` ×9, samba/ldb/wbclient, gstreamer ×4, mesa ×5, webkit ×6, xserver ×4, hplip ×5, fprint ×2, nma ×3, `ubuntu-pro-client` ×2, `distro-info` ×2
+- **`packer` 1.16.0 → 1.16.2** after repairing the Hashicorp apt keyring
+- **3 snap refreshes**: `core24` rev 2307, `firefox` 160.0.1-1 rev 9228, `snap-store` rev 1504
+- **Graceful reboot** 22:32:58, back online in 65 s, all 6 verification gates passed, node uncordoned — kernel stays **7.0.0-43** (no kernel change in this window)
+- **NEW HOLD: `containerd.io` pinned at 2.3.6.** Upstream 2.4.2 is a non-LTS line and removes the `enable_cdi` (line 74) and `bin_dir` (lines 112, 144) keys our `/etc/containerd/config.toml` uses; no 2.3.7 build exists in Docker's repo yet
+- **K8s trio 1.35.9 → 1.35.10** applied by k8s-selfhosted during the same window (holds restored afterwards); API server now reports v1.35.10
+- **Hashicorp apt repo fixed**: added the 2026 signing key `D55C0D1AC78A8D8126CB631CFC9CA96ACA026560` to `/usr/share/keyrings/hashicorp-archive-keyring.gpg` (old file kept as `.bak-20261119`); the long-standing `NO_PUBKEY` warning is gone
+- Post-window: only `containerd.io` remains upgradable, `dpkg --audit` empty, no reboot flag, 4 kernel images retained (7.0.0-38 rollback), `vboxdrv` still the only failed unit, gateway `llm.kopidalar.id` → 401
+
 ### Incident (Unplanned Outage - 2026-11-19)
 - **Host went offline uncleanly** between the last journal entry `2026-11-19T10:20:00+09:00` and the power-on at `19:32:15 JST` (~9h12m). No shutdown record in `last -x` — the previous boot row (2026-10-08 00:28) simply ends, so this was a hard stop (power loss or hang), not a graceful reboot.
 - **Impact**: entire single-node cluster, the `llm.kopidalar.id` Cloudflare tunnel, ArgoCD, and the agent inference gateway were unreachable. Detected 16:25 JST via ICMP 100% loss, `(incomplete)` ARP entry, SSH timeout, and Cloudflare **530 / error 1033** on the gateway.
