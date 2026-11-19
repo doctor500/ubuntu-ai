@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Incident (Unplanned Outage - 2026-11-19)
+- **Host went offline uncleanly** between the last journal entry `2026-11-19T10:20:00+09:00` and the power-on at `19:32:15 JST` (~9h12m). No shutdown record in `last -x` — the previous boot row (2026-10-08 00:28) simply ends, so this was a hard stop (power loss or hang), not a graceful reboot.
+- **Impact**: entire single-node cluster, the `llm.kopidalar.id` Cloudflare tunnel, ArgoCD, and the agent inference gateway were unreachable. Detected 16:25 JST via ICMP 100% loss, `(incomplete)` ARP entry, SSH timeout, and Cloudflare **530 / error 1033** on the gateway.
+- **Recovery**: powered back on 19:32:15 JST and booted into **7.0.0-43-generic** — unattended-upgrades had installed 7.0.0-43 on 2026-11-13 06:02 JST (7.0.0-42 → 7.0.0-43) leaving a pending reboot, which this cold boot consumed.
+- **Corruption check: none found.** ext4 `Filesystem state: clean`, zero EXT4/I-O/NVMe errors, `dpkg --audit` empty, etcd healthy with no alarms (36 MB DB, 5.9 ms commit), all PVCs Bound, ArgoCD 8/8 Synced+Healthy at `152af6c`, node Ready v1.35.9, 26 pods Running, gateway `llm.kopidalar.id` back to **401** (auth-gated = healthy).
+- **Database recovery**: all three Postgres instances (n8n-1, n8n-2, umami) logged `database system was not properly shut down; automatic recovery in progress`, replayed WAL (`redo done`), and reached `database system is ready to accept connections`. No corruption or data-loss errors.
+- Only failed unit is the pre-existing `vboxdrv.service` (Secure Boot blocks the module since 2026-01-08). Remaining noise: snap `firmware-notifier` failures and a Bluetooth `sap-server` error.
+- See `context/vm_update_log.md` for the full pre/post-boot evidence.
+
 ### Added
 - Created `update_system` procedure for package and bundle updates with version tracking
   - Supports APT, Homebrew, and bundle-specific updates

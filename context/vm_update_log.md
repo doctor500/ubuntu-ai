@@ -316,3 +316,21 @@ changes go in `change_log.md`.
 - **Single event**: exactly one upgrade run + one reboot in apt history (`uptime -s` 2026-10-08 00:28:03). No second batch existed.
 - Verified facts folded in from that commit (re-checked 10-09): unattended-upgrades 06:31 local autoremoved 7.0.0-31 bits; **4 kernel images remain** (`linux-image` 7.0.0-38 current, 7.0.0-34 fallback, 6.17.0-40, 6.14.0-37 — the earlier "13 images" figure counted headers/modules too); libpng16-16t64 .6→.7 auto-applied by unattended as predicted.
 - New pile since the window (10-09 check, 8 upgradable): containerd.io, libarchive13t64, libde265-0, libldb2, libsmbclient0, libwbclient0, libxml2, samba-libs — next routine scan item; containerd.io apply follows the cordon-first convention when approved.
+
+## 2026-11-19
+
+### Incident — unplanned outage and recovery verification
+Agent performed a read-only verification after the host came back; **no packages were applied in this session**.
+
+- **Downtime**: last journal line of the previous boot `2026-11-19T10:20:00+09:00`; power-on `2026-11-19 19:32:15 JST` → **~9h12m**. `last -x` shows no shutdown row for the 2026-10-08 boot, so the stop was unclean (hard power loss or hang). Postgres confirms: `database system was not properly shut down`.
+- **Kernel at boot**: `7.0.0-43-generic` (#43~24.04.1). Cause is not this incident: `unattended-upgrade` installed `linux-image/headers/generic-hwe-24.04` `7.0.0-42 → 7.0.0-43` on **2026-11-13 06:02 JST** (apt history line 115/116), leaving a pending reboot. The cold boot consumed it. `/boot` still holds `7.0.0-38` (rollback) plus `6.17.0-40`, `6.14.0-37`.
+- **Filesystem**: `tune2fs` → `Filesystem state: clean`, `Lifetime writes 1930 GB`; `journalctl -k` grep for `EXT4-fs error|I/O error|remounting filesystem read-only` across all boots → `-- No entries --`; dmesg grep for NVMe/ATA errors this boot → **0**.
+- **Package state**: `dpkg --audit` → empty; `apt-get` not run; `apt list --upgradable` → **64** entries (including the held `kubeadm`/`kubectl`/`kubelet` trio, `containerd.io`, `snapd`, mesa/webkit, sssd, `ubuntu-pro-client`, xserver). Next routine scan item.
+- **Boot errors** (`journalctl -b -p err`) → 4 lines total: `vboxdrv.service` (pre-existing, Secure Boot), snap `firmware-updater.firmware-notifier`, Bluetooth `sap-server`. No new failures.
+- **Kubernetes**: node `davidlay-nuc13anki7` **Ready** v1.35.9 (kernel 7.0.0-43, containerd 2.3.6), all other node conditions False; **26 pods Running**, zero non-Running/non-Succeeded; all pod restarts stamp `166m ago` (the boot restart) — no post-boot crashloop.
+- **etcd**: `endpoint health` → healthy, commit 5.94 ms; `alarm list` → empty; DB 36 MB, raft index/term consistent.
+- **ArgoCD**: 8/8 applications `Synced` + `Healthy` at revision `152af6c` (matches the k8s-selfhosted repo HEAD). No drift.
+- **Storage**: 4/4 PVCs `Bound` (9router 2Gi, umami 5Gi, n8n-1 8Gi, n8n-2 8Gi); root fs 98G/3.6T used (3%).
+- **Databases**: n8n-1, n8n-2, umami Postgres all replayed WAL (`redo done`) and reached `database system is ready to accept connections`; umami also answers `accepting connections`. No checksum/page errors.
+- **Gateway**: `https://llm.kopidalar.id/v1/models` → **401** in 0.12 s (auth-gated = tunnel and 9router healthy); cloudflared connector registered 4 edge connections at 10:32:55Z.
+- **Open items**: 64-package pile for the next approval window; `vboxdrv` still blocked by Secure Boot; SMART unavailable (`smartctl`/`nvme-cli` not installed) — consider adding `nvme-cli` to the shell_tools bundle for future post-crash disk checks.
