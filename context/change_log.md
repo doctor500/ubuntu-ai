@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **K8s trio 1.35.9 → 1.35.10** applied by k8s-selfhosted during the same window (holds restored afterwards); API server now reports v1.35.10
 - **Hashicorp apt repo fixed**: added the 2026 signing key `D55C0D1AC78A8D8126CB631CFC9CA96ACA026560` to `/usr/share/keyrings/hashicorp-archive-keyring.gpg` (old file kept as `.bak-20261119`); the long-standing `NO_PUBKEY` warning is gone
 - Post-window: only `containerd.io` remains upgradable, `dpkg --audit` empty, no reboot flag, 4 kernel images retained (7.0.0-38 rollback), `vboxdrv` still the only failed unit, gateway `llm.kopidalar.id` → 401
+- **Joint post-window verification (both agents)**: node Ready v1.35.10, 26/26 pods Running, ArgoCD 8/8 Synced+Healthy, etcd healthy with no alarms, 4/4 external hosts 302; images 9router 0.5.119, n8n 2.41.6 ×2, umami 3.5.0, argocd v3.6.2. k8s-selfhosted confirmed the interrupted K1 was caused by this window's 22:33 JST reboot, not a network fault; its detached re-run left nothing half-applied
 
 ### Incident (Unplanned Outage - 2026-11-19)
 - **Host went offline uncleanly** between the last journal entry `2026-11-19T10:20:00+09:00` and the power-on at `19:32:15 JST` (~9h12m). No shutdown record in `last -x` — the previous boot row (2026-10-08 00:28) simply ends, so this was a hard stop (power loss or hang), not a graceful reboot.

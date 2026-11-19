@@ -360,3 +360,11 @@ Window run under cordon, approved by David ("approve both"). Includes a coordina
 - **Hashicorp apt repo repair**: keyring only had `798AEC654E5C15428C8E42EEAA16FCBCA621E701` (2023). Fetched current key and merged `D55C0D1AC78A8D8126CB631CFC9CA96ACA026560` (2026-09-09) into `/usr/share/keyrings/hashicorp-archive-keyring.gpg`; previous file saved as `hashicorp-archive-keyring.gpg.bak-20261119`. `apt-get update` for that repo now succeeds; **`packer` 1.16.0 → 1.16.2** applied from the refreshed index.
 - **Post-window state**: `apt list --upgradable` → only `containerd.io` (held). `dpkg --audit` empty, no `/var/run/reboot-required`, 4 kernel images retained (`7.0.0-43` current, `7.0.0-38` rollback, `6.17.0-40`, `6.14.0-37`). Boot errors limited to the pre-existing `vboxdrv` (Secure Boot) and Bluetooth `sap-server`. Gateway `https://llm.kopidalar.id/v1/models` → 401.
 - **Rollback anchors**: GRUB `7.0.0-38` entry, per-package apt downgrade, `containerd.io` untouched (2.3.6), `.deb` cache cleared by `apt-get clean` (re-download available from repos).
+
+### Joint verification after both windows (2026-11-19, post K-window)
+- Node Ready **v1.35.10** (server + kubelet + control-plane images), 26/26 pods Running, ArgoCD **8/8 Synced+Healthy**, etcd healthy (9.6 ms) with no alarms, 4/4 external hosts 302.
+- Service versions after k8s-selfhosted's window: 9router 0.5.119, n8n 2.41.6 ×2 (chart 1.24.43), umami 3.5.0 (Prisma migration `27_add_error_tracking`, 27/27), argocd v3.6.2 (chart 10.18.2).
+- `containerd.io` confirmed still **2.3.6, held** on both sides.
+- Root cause of the interrupted K1: this window's reboot at 22:33 JST killed their live SSH session; their detached re-run completed cleanly, no half-applied state.
+- Postgres pods rolled with the n8n chart bump onto `bitnamilegacy/postgresql` (same version 17.6.0-debian-12-r4), both 139-table DBs intact.
+- Still open (non-blocking): BIOS "After Power Failure = Power On" not set; `smartctl`/`nvme-cli` absent; `scripts/upgrade-argocd.sh` does not apply new CRDs (k8s repo item).
